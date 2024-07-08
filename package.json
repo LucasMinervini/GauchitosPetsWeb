@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.3"
+  },
+  "name": "gauchitos",
+  "version": "1.0.0",
+  "main": "index.html",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "animales",
+    "perros",
+    "gatos",
+    "mascotas"
+  ],
+  "author": "Lucas Minervini",
+  "license": "ISC",
+  "description": ""
+}
