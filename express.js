@@ -5,7 +5,7 @@ const app = express();
 const port = 8080;
 
 app.get('/', (req, res) => {
-  db.query('SHOW TABLES; ', (err, results) => {
+  db.query('SELECT * FROM users;', (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
       res.status(500).send('Error executing query');
