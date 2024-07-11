@@ -8,21 +8,9 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <h1>Productos</h1>
-    <ul id="productos-lista"></ul>
-
-    <script src="app.js">document.addEventListener('DOMContentLoaded', function() {
-        fetch('/productos')
-            .then(response => response.json())
-            .then(data => {
-                const listaProductos = document.getElementById('productos-lista');
-                data.forEach(producto => {
-                    const li = document.createElement('li');
-                    li.textContent = `${producto.name} - $${producto.retail_price}`;
-                    listaProductos.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-    });</script>
+    <header>
+    <p>aca matamos a tu mascotas</p>
+    </header>
+    <script src="server.js"></script>
 </body>
 </html>

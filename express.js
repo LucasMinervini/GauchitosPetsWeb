@@ -1,8 +1,8 @@
 const express = require('express');
-const db = require('./server.js');  // Importa el archivo de conexión a la base de datos
+const db = require('./bd.js'); 
 
 const app = express();
-const port = 3000;
+const port = 8080;
 
 app.get('/', (req, res) => {
   db.query('SHOW TABLES; ', (err, results) => {
