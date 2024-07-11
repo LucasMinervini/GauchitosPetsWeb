@@ -1,6 +1,9 @@
 {
   "dependencies": {
-    "bootstrap": "^5.3.3"
+    "bootstrap": "^5.3.3",
+    "express": "^4.19.2",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.10.2"
   },
   "name": "gauchitos",
   "version": "1.0.0",

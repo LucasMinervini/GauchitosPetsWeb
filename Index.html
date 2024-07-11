@@ -1,7 +1,28 @@
 <!DOCTYPE html>
+<head>
 <html lang="es">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LosGauchitosPets</title>
+    <title>Los Gauchitos Pets</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">  
-</html> 
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <h1>Productos</h1>
+    <ul id="productos-lista"></ul>
+
+    <script src="app.js">document.addEventListener('DOMContentLoaded', function() {
+        fetch('/productos')
+            .then(response => response.json())
+            .then(data => {
+                const listaProductos = document.getElementById('productos-lista');
+                data.forEach(producto => {
+                    const li = document.createElement('li');
+                    li.textContent = `${producto.name} - $${producto.retail_price}`;
+                    listaProductos.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });</script>
+</body>
+</html>
