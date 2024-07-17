@@ -1,0 +1,8 @@
+GET http://localhost:8080/api/products
+
+#### PARA CREAR UN PRODUCTO
+POST http://localhost:8080/api/products
+Content-Type: application/json
+{
+
+}
