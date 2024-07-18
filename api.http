@@ -1,14 +1,16 @@
 ### PARA OBTENER TODOS LOS PRODUCTOS
 GET http://localhost:8080/api/products
 
+### OBTENER UN PRODUCTO POR ID
+GET http://localhost:8080/api/products/6
 ### Insertar un nuevo producto
 POST http://localhost:8080/api/products
 Content-Type: application/json; charset=utf-8
 
 {
-  "name": "Piedras x15",
-  "sku": "B15",
-  "description": "Solo para gatos grandes",
+  "name": "EUKANUBA 23KG",
+  "sku": "23KG",
+  "description": "Solo para perros grandes",
   "retail_price": 15000.00,
   "cost": 10000.00,
   "stock_quantity": 20,
@@ -17,10 +19,10 @@ Content-Type: application/json; charset=utf-8
 }
 
 ### BORRAR PRODUCTO por ID
-DELETE http://localhost:8080/api/products/4
+DELETE http://localhost:8080/api/products/7
 
-### ACTUALIZAR UN PRODUCTO
-PATCH http://localhost:8080/api/products/8
+### ACTUALIZAR UN PRODUCTO POR ID
+PATCH http://localhost:8080/api/products/9
 Content-Type: application/json; charset=utf-8
 
 {
