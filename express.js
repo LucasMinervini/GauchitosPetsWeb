@@ -1,12 +1,14 @@
-// server.js
+// express.js
 const express = require('express');
 const db = require('./bd.js');
 const productRoutes = require('./routes/productsRoutes');
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = 8080;
 
 app.use(express.json());
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
   db.query('SELECT * FROM users;', (err, results) => {
