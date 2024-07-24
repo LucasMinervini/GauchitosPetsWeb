@@ -1,11 +1,10 @@
-// controllers/productController.js
 const db = require('../bd.js');
+const crypto = require('crypto'); // Importa el módulo crypto
+const z = require('zod');
 
 // Crear un nuevo producto
 const createProduct = (req, res) => {
   const { name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id } = req.body;
-
-  // Verificar si category_id y provider_id existen en sus respectivas tablas
   const categoryQuery = 'SELECT id FROM categories WHERE id = ?';
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
 
@@ -21,24 +20,22 @@ const createProduct = (req, res) => {
         return;
       }
 
+      const newId = crypto.randomUUID(); // Genera un UUID para el nuevo producto
       const query = `
-        INSERT INTO products (name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      db.query(query, [name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id], (err, results) => {
+      db.query(query, [newId, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id], (err, results) => {
         if (err) {
           console.error('Error executing query:', err);
           res.status(500).send('Error executing query');
           return;
         }
-        res.status(201).send({ id: results.insertId, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id });
+        res.status(201).send({ id: newId, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id });
       });
     });
   });
 };
-
-module.exports = { createProduct };
-
 // Obtener todos los productos
 const getAllProducts = (req, res) => {
   db.query('SELECT * FROM products', (err, results) => {
@@ -50,8 +47,25 @@ const getAllProducts = (req, res) => {
     res.status(200).json(results);
   });
 };
+// obtener un producto por nombre
+const getProductByName = (req,res) =>{
+  const { name } = req.params;
+  db.query('SELECT * FROM products WHERE name = ?',[name],(err,results) =>{
 
-// Obtener un producto por ID
+    if(err){
+      console.log('Error executing query:',err);
+      res.status(500).send('Error executing query');
+      return;
+    }
+    if(results.length === 0){
+      res.status(404).send('Error executing query');
+    }
+
+    res.status(200).json(results[0]);
+  })
+}
+
+// Obtener un producto por id
 const getProductById = (req, res) => {
   const { id } = req.params;
   db.query('SELECT * FROM products WHERE id = ?', [id], (err, results) => {
@@ -71,83 +85,44 @@ const getProductById = (req, res) => {
 // Actualizar un producto por ID
 const updateProduct = (req, res) => {
   const { id } = req.params;
-  const { name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id } = req.body;
+  const updates = req.body;
+  const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
+  const values = Object.values(updates);
 
-  // Construir la consulta SQL dinámicamente para solo actualizar los campos proporcionados
-  let fields = [];
-  let values = [];
-  
-  if (name !== undefined) {
-    fields.push("name = ?");
-    values.push(name);
-  }
-  if (sku !== undefined) {
-    fields.push("sku = ?");
-    values.push(sku);
-  }
-  if (description !== undefined) {
-    fields.push("description = ?");
-    values.push(description);
-  }
-  if (retail_price !== undefined) {
-    fields.push("retail_price = ?");
-    values.push(retail_price);
-  }
-  if (cost !== undefined) {
-    fields.push("cost = ?");
-    values.push(cost);
-  }
-  if (stock_quantity !== undefined) {
-    fields.push("stock_quantity = ?");
-    values.push(stock_quantity);
-  }
-  if (category_id !== undefined) {
-    fields.push("category_id = ?");
-    values.push(category_id);
-  }
-  if (provider_id !== undefined) {
-    fields.push("provider_id = ?");
-    values.push(provider_id);
-  }
+  const query = `
+      UPDATE products 
+      SET ${fields}
+      WHERE id = ?
+  `;
 
-  if (fields.length === 0) {
-    res.status(400).send("No fields to update");
-    return;
-  }
+  db.query(query, [...values, id], (err, results) => {
+      if (err) {
+          console.error('Error executing query:', err);
+          res.status(500).send('Error ejecutando la consulta');
+          return;
+      }
 
-  values.push(id);
+      if (results.affectedRows === 0) {
+          res.status(404).send('Producto no encontrado');
+          return;
+      }
 
-  const query = `UPDATE products SET ${fields.join(", ")} WHERE id = ?`;
-
-  db.query(query, values, (err, results) => {
-    if (err) {
-      console.error('Error executing query:', err);
-      res.status(500).send('Error executing query');
-      return;
-    }
-
-    if (results.affectedRows === 0) {
-      res.status(404).send('Product not found');
-      return;
-    }
-
-    res.status(200).send('Product updated successfully');
+      res.status(200).json({ message: 'Producto actualizado exitosamente' });
   });
 };
 
-module.exports = { createProduct, updateProduct };
 
 // Eliminar un producto por ID
 const deleteProductById = (req, res) => {
   const { id } = req.params;
   db.query('DELETE FROM products WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error('Error executing query:', err);
-      res.status(500).send('Error executing query');
+      console.error('Error al ejecutar query', err);
+      res.status(500).send('Error al ejecutar query');
       return;
     }
     if (results.affectedRows === 0) {
-      res.status(404).send('Product not found');
+      res.status(404).send('Producto no encontrado');
       return;
     }
     res.status(200).send({ id });
@@ -159,5 +134,6 @@ module.exports = {
   getAllProducts,
   getProductById,
   updateProduct,
-  deleteProductById
+  deleteProductById,
+  getProductByName
 };

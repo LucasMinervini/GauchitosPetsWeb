@@ -5,6 +5,7 @@ const productRoutes = require('./routes/productsRoutes.js');
 const bodyParser = require('body-parser');
 const path = require('path');
 
+
 const app = express();
 const port = 8080;
 

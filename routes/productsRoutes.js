@@ -10,6 +10,9 @@ router.post('/products', productController.createProduct);
 // Obtener todos los productos
 router.get('/products', productController.getAllProducts);
 
+// Obtener un producto por NOMBRE
+router.get('/products/:name', productController.getProductByName);
+
 // Obtener un producto por ID
 router.get('/products/:id', productController.getProductById);
 
@@ -18,5 +21,6 @@ router.patch('/products/:id', productController.updateProduct);
 
 // Eliminar un producto por ID
 router.delete('/products/:id', productController.deleteProductById);
+
 
 module.exports = router;

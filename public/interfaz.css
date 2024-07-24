@@ -1,0 +1,70 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #121212; 
+    color: #e0e0e0; 
+}
+
+h1, h2 {
+    color: #ffffff;
+    text-align: center;
+}
+
+section {
+    margin-bottom: 20px;
+    background-color: #1e1e1e; /* Fondo de las secciones */
+    padding: 20px;
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+}
+
+input, button {
+    margin: 5px 0;
+    padding: 10px;
+    width: calc(100% - 22px); /* Ajuste para el padding y margen */
+    border: 1px solid #333; /* Borde sutil */
+    border-radius: 4px; /* Bordes redondeados */
+    background-color: #2e2e2e; /* Fondo del input */
+    color: #e0e0e0; /* Texto claro */
+}
+
+input:focus {
+    border-color: #4CAF50; /* Borde verde al enfocar */
+    outline: none; /* Sin outline */
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px; /* Bordes redondeados */
+    transition: background-color 0.3s ease; /* Transición suave */
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+div {
+    margin-top: 10px;
+}
+
+#products, #product, #productByName, #updateResponse {
+    color: #e0e0e0; /* Texto claro */
+}
+
+input[type="text"], input[type="number"] {
+    background-color: #1e1e1e; /* Fondo del input */
+    color: #e0e0e0; /* Texto claro */
+}
+
+#products p, #product p, #productByName p, #updateResponse p {
+    margin: 0 0 10px;
+}
+
+#products hr, #product hr, #productByName hr, #updateResponse hr {
+    border: 0;
+    border-top: 1px solid #333;
+    margin: 10px 0;
+}
