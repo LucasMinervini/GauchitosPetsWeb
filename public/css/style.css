@@ -2123,8 +2123,8 @@ ul {
 
 /* line 20, ../../01 cl html template/03_jun 2019/188_Aranoz shop_html/sass/_menu.scss */
 .main_menu .main-menu-item ul li .nav-link {
-  color: #000;
-  font-size: 15px;
+  color: #000000;
+  font-size: 30px;
   padding: 36px 23px;
   font-family: "Poppins", sans-serif;
   text-transform: capitalize;
@@ -2424,7 +2424,7 @@ ul {
 /* line 2, ../../01 cl html template/03_jun 2019/188_Aranoz shop_html/sass/_banner.scss */
 .banner_part {
   position: relative;
-  background-color: #2a002e;
+  background-color: #b655c8;
   overflow: hidden;
 }
 
@@ -2602,7 +2602,7 @@ ul {
 .banner_part .slider-counter {
   font-size: 100px;
   font-weight: 700;
-  color: #c9cc00;
+  color: #000000;
   position: absolute;
   right: -16%;
   top: 38%;
