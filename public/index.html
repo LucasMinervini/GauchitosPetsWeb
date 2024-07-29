@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<head>
 <html lang="es">
-    <!-- Required meta tags -->
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Los Gauchitos Pets</title>
@@ -12,17 +11,39 @@
     <link rel="stylesheet" href="css/animate.css">
     <!-- owl carousel CSS -->
     <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
     <!-- font awesome CSS -->
     <link rel="stylesheet" href="css/all.css">
     <!-- flaticon CSS -->
     <link rel="stylesheet" href="css/flaticon.css">
     <link rel="stylesheet" href="css/themify-icons.css">
-    <!-- font awesome CSS -->
+    <!-- magnific popup CSS -->
     <link rel="stylesheet" href="css/magnific-popup.css">
     <!-- swiper CSS -->
     <link rel="stylesheet" href="css/slick.css">
     <!-- style CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .owl-dots {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .owl-dot {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin: 5px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .owl-dot.active {
+            background: #777;
+        }
+    </style>
 </head>
 <body>
     <!--::header::-->
@@ -46,12 +67,11 @@
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown_1"
                                         role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        comprar
+                                        Comprar
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown_1">
-                                        <a class="dropdown-item" href="category.html"> Categoria de compra</a>
-                                        <a class="dropdown-item" href="single-product.html">detalles de producto</a>
-                                        
+                                        <a class="dropdown-item" href="category.html">Categoria de compra</a>
+                                        <a class="dropdown-item" href="single-product.html">Detalles de producto</a>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
@@ -60,25 +80,24 @@
                                         Páginas
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown_2">
-                                        <a class="dropdown-item" href="login.html"> Logear</a>
-                                        <a class="dropdown-item" href="tracking.html">tracking</a>
-                                        <a class="dropdown-item" href="checkout.html">product checkout</a>
+                                        <a class="dropdown-item" href="login.html">Logear</a>
+                                        <a class="dropdown-item" href="tracking.html">Tracking</a>
+                                        <a class="dropdown-item" href="checkout.html">Product Checkout</a>
                                         <a class="dropdown-item" href="cart.html">Carrito de compras</a>
                                         <a class="dropdown-item" href="confirmation.html">Confirmacion</a>
-                                        <a class="dropdown-item" href="elements.html">elements</a>
+                                        <a class="dropdown-item" href="elements.html">Elements</a>
                                     </div>
                                 </li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown_2"
                                         role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        blog
+                                        Blog
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown_2">
-                                        <a class="dropdown-item" href="blog.html"> blog</a>
-                                        <a class="dropdown-item" href="single-blog.html">Single blog</a>
+                                        <a class="dropdown-item" href="blog.html">Blog</a>
+                                        <a class="dropdown-item" href="single-blog.html">Single Blog</a>
                                     </div>
                                 </li>
-                                
                                 <li class="nav-item">
                                     <a class="nav-link" href="contact.html">Contact</a>
                                 </li>
@@ -92,12 +111,6 @@
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-cart-plus"></i>
                                 </a>
-                                <!-- <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <div class="single_product">
-    
-                                    </div>
-                                </div> -->
-                                
                             </div>
                         </div>
                     </nav>
@@ -129,8 +142,8 @@
                                             <h1>Alimentos y
                                                 correas
                                             </h1>
-                                            <p>contamos con las mejores marcas que hay en el mercado</p>
-                                            <a href="#" class="btn_2">comprar ahora</a>
+                                            <p>Contamos con las mejores marcas que hay en el mercado</p>
+                                            <a href="#" class="btn_2">Comprar ahora</a>
                                         </div>
                                     </div>
                                 </div>
@@ -138,29 +151,15 @@
                                     <img src="img/IMG_1367-Photoroom.png" alt="eukanuba large adulto" width="700px" height="450px">
                                 </div>
                             </div>
-                        </div><div class="single_banner_slider">
+                        </div>
+                        <div class="single_banner_slider">
                             <div class="row">
                                 <div class="col-lg-5 col-md-8">
                                     <div class="banner_text">
                                         <div class="banner_text_iner">
                                             <h1>Accesorios </h1>
                                             <p>Tenemos los mejores accesorios de las mejores marcas</p>
-                                            <a href="#" class="btn_2">buy now</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="banner_img d-none d-lg-block">
-                                    <img src="img/banner_img.png" alt="">
-                                </div>
-                            </div>
-                        </div><div class="single_banner_slider">
-                            <div class="row">
-                                <div class="col-lg-5 col-md-8">
-                                    <div class="banner_text">
-                                        <div class="banner_text_iner">
-                                            <h1>Veterinaria</h1>
-                                            <p>contamos con una especialista y experimentada Veterinaria</p>
-                                            <a href="#" class="btn_2">comprar ahora</a>
+                                            <a href="#" class="btn_2">Comprar ahora</a>
                                         </div>
                                     </div>
                                 </div>
@@ -169,15 +168,14 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- <div class="single_banner_slider">
+                        <div class="single_banner_slider">
                             <div class="row">
                                 <div class="col-lg-5 col-md-8">
                                     <div class="banner_text">
                                         <div class="banner_text_iner">
-                                            <h1>Cloth $ Wood Sofa</h1>
-                                            <p>Incididunt ut labore et dolore magna aliqua quis ipsum
-                                                suspendisse ultrices gravida. Risus commodo viverra</p>
-                                            <a href="#" class="btn_2">buy now</a>
+                                            <h1>Veterinaria</h1>
+                                            <p>Contamos con una especialista y experimentada Veterinaria</p>
+                                            <a href="#" class="btn_2">Comprar ahora</a>
                                         </div>
                                     </div>
                                 </div>
@@ -185,15 +183,14 @@
                                     <img src="img/banner_img.png" alt="">
                                 </div>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
-                    <div class="slider-counter"></div>
+                    <div class="owl-dots"></div>
                 </div>
             </div>
         </div>
     </section>
     <!-- banner -->
-
 
     <!-- jquery plugins here-->
     <script src="js/jquery-1.12.1.min.js"></script>
@@ -221,5 +218,28 @@
     <script src="js/mail-script.js"></script>
     <!-- custom js -->
     <script src="js/custom.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            console.log('Initializing Owl Carousel');
+            $('.banner_slider').owlCarousel({
+                loop:true,
+                margin:10,
+                nav:true,
+                dots: true,
+                responsive:{
+                    0:{
+                        items:1
+                    },
+                    600:{
+                        items:1
+                    },
+                    1000:{
+                        items:1
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

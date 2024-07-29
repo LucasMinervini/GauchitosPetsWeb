@@ -1,43 +1,58 @@
+const { error } = require('console');
 const db = require('../bd.js');
-const crypto = require('crypto'); // Importa el módulo crypto
+const crypto = require('crypto');
 const z = require('zod');
+const { validateProd } = require('../schema/product.js'); 
+
 
 // Crear un nuevo producto
 const createProduct = (req, res) => {
-  const { name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id } = req.body;
+  const result = validateProd(req.body);
+
+  if (!result.success) {
+    return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
+  }
+  
+  const { name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id } = result.data; // usar result.data
   const categoryQuery = 'SELECT id FROM categories WHERE id = ?';
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
 
+  // Verificar si el category_id es válido
   db.query(categoryQuery, [category_id], (err, categoryResults) => {
     if (err || categoryResults.length === 0) {
-      res.status(400).send('Invalid category_id');
-      return;
+      return res.status(400).send('Invalid category_id');
     }
 
+    // Verificar si el provider_id es válido
     db.query(providerQuery, [provider_id], (err, providerResults) => {
       if (err || providerResults.length === 0) {
-        res.status(400).send('Invalid provider_id');
-        return;
+        return res.status(400).send('Invalid provider_id');
       }
 
-      const newId = crypto.randomUUID(); // Genera un UUID para el nuevo producto
+      // Genera un UUID para el nuevo producto
+      const newId = crypto.randomUUID(); 
       const query = `
         INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
+
+      // Ejecutar la consulta para insertar el nuevo producto
       db.query(query, [newId, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id], (err, results) => {
         if (err) {
           console.error('Error executing query:', err);
-          res.status(500).send('Error executing query');
-          return;
+          return res.status(500).send('Error executing query');
         }
-        res.status(201).send({ id: newId, name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id });
+        
+        // Retorna la respuesta con el id del nuevo producto y los datos validados
+        res.status(201).send({ id: newId, ...result.data });
       });
     });
   });
 };
+
 // Obtener todos los productos
 const getAllProducts = (req, res) => {
+ 
   db.query('SELECT * FROM products', (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
@@ -49,6 +64,7 @@ const getAllProducts = (req, res) => {
 };
 // obtener un producto por nombre
 const getProductByName = (req,res) =>{
+
   const { name } = req.params;
   db.query('SELECT * FROM products WHERE name = ?',[name],(err,results) =>{
 
@@ -67,6 +83,7 @@ const getProductByName = (req,res) =>{
 
 // Obtener un producto por id
 const getProductById = (req, res) => {
+  
   const { id } = req.params;
   db.query('SELECT * FROM products WHERE id = ?', [id], (err, results) => {
     if (err) {
@@ -84,6 +101,7 @@ const getProductById = (req, res) => {
 
 // Actualizar un producto por ID
 const updateProduct = (req, res) => {
+  
   const { id } = req.params;
   const updates = req.body;
   const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');

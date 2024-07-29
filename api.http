@@ -9,19 +9,18 @@ POST http://localhost:8080/api/products
 Content-Type: application/json; charset=utf-8
 
 {
-  "name": "Perros",
-  "sku": "23KG",
+  "name": "Bolsa",
+  "sku": 2343,
   "description": "Solo para perros grandes",
   "retail_price": 15000.00,
   "cost": 10000.00,
-  "stock_quantity": 20,
+  "stock_quantity": 1,
   "category_id": 1,
   "provider_id": 1
 }
 
 ### BORRAR PRODUCTO por ID
-DELETE http://localhost:8080/api/products/6f25f8d0-f73e-4b4c-ae94-04a00d20854d
-
+DELETE http://localhost:8080/api/products/6c9fd1fe-7899-4147-bc79-643402f0bec7
 ### ACTUALIZAR CAMPO DE JSON POR ID
 PATCH http://localhost:8080/api/products/56fe61eb-95af-48de-95fb-19037cd7fd61
 Content-Type: application/json; charset=utf-8
