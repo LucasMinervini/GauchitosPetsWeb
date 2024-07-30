@@ -3,6 +3,7 @@ const db = require('../bd.js');
 const crypto = require('crypto');
 const z = require('zod');
 const { validateProd } = require('../schema/product.js'); 
+const { ValidatePartialProd } = require('../schema/product.js');
 
 
 // Crear un nuevo producto
@@ -101,9 +102,22 @@ const getProductById = (req, res) => {
 
 // Actualizar un producto por ID
 const updateProduct = (req, res) => {
+
+  // Validar la entrada parcial del producto
+  const result = ValidatePartialProd(req.body);
+
+  if (!result.success) {
+    return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
+  }
   
   const { id } = req.params;
   const updates = req.body;
+
+  // Verificar que haya campos para actualizar
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: 'No se proporcionaron campos para actualizar' });
+  }
+
   const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
   const values = Object.values(updates);
 

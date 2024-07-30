@@ -24,13 +24,12 @@ Content-Type: application/json; charset=utf-8
 DELETE http://localhost:8080/api/products/6c9fd1fe-7899-4147-bc79-643402f0bec7
 
 ### ACTUALIZAR CAMPO DE JSON POR ID
-PATCH http://localhost:8080/api/products/86dbb88e-df15-4181-bc57-6e6f9242b0d4
+PATCH http://localhost:8080/api/products/39d8e548-46c2-4746-8633-4c64d766663d
 Content-Type: application/json; charset=utf-8
 
 {
   "cost": 30000,
-  "name": "Bolsa de kevin",
-  "id": "1234"
+  "name": 434
 }
 
 ### OBTENER PRODUCTO POR NOMBRE 
