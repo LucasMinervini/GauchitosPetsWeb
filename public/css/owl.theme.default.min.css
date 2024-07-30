@@ -5,8 +5,6 @@
 
 .owl-theme .owl-dots .owl-dot {
     display: inline-block;
-    zoom: 1;
-    display: inline;
 }
 
 .owl-theme .owl-dots .owl-dot span {

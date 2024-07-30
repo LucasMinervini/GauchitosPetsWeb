@@ -9,6 +9,7 @@ POST http://localhost:8080/api/products
 Content-Type: application/json; charset=utf-8
 
 {
+  "sql": "SELECT * FROM users",
   "name": "Bolsa",
   "sku": 2343,
   "description": "Solo para perros grandes",
@@ -21,13 +22,15 @@ Content-Type: application/json; charset=utf-8
 
 ### BORRAR PRODUCTO por ID
 DELETE http://localhost:8080/api/products/6c9fd1fe-7899-4147-bc79-643402f0bec7
+
 ### ACTUALIZAR CAMPO DE JSON POR ID
-PATCH http://localhost:8080/api/products/56fe61eb-95af-48de-95fb-19037cd7fd61
+PATCH http://localhost:8080/api/products/86dbb88e-df15-4181-bc57-6e6f9242b0d4
 Content-Type: application/json; charset=utf-8
 
 {
   "cost": 30000,
-  "retail_price":45000
+  "name": "Bolsa de kevin",
+  "id": "1234"
 }
 
 ### OBTENER PRODUCTO POR NOMBRE 

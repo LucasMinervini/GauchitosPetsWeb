@@ -83,7 +83,7 @@
       autoplayHoverPause: true,
       autoplayTimeout: 5000,
       nav: true,
-      navText: ["Anterior", "Siguiente"],
+      navText: ["next", "previous"],
       smartSpeed: 1000,
       responsive: {
         0: {
@@ -145,9 +145,9 @@
     dots: false,
     autoplay: true,
     autoplayHoverPause: true,
-    autoplayTimeout: 3000,
+    autoplayTimeout: 5000,
     nav: true,
-    navText: ["Anterior", "Siguiente"],
+    navText: ["next", "previous"],
     smartSpeed: 1000,
     responsive: {
       0: {

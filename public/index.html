@@ -5,29 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Los Gauchitos Pets</title>
     <link rel="icon" href="img/favicon.png">
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
-    <!-- animate CSS -->
     <link rel="stylesheet" href="css/animate.css">
-    <!-- owl carousel CSS -->
     <link rel="stylesheet" href="css/owl.carousel.min.css">
     <link rel="stylesheet" href="css/owl.theme.default.min.css">
-    <!-- font awesome CSS -->
     <link rel="stylesheet" href="css/all.css">
-    <!-- flaticon CSS -->
     <link rel="stylesheet" href="css/flaticon.css">
     <link rel="stylesheet" href="css/themify-icons.css">
-    <!-- magnific popup CSS -->
     <link rel="stylesheet" href="css/magnific-popup.css">
-    <!-- swiper CSS -->
     <link rel="stylesheet" href="css/slick.css">
-    <!-- style CSS -->
     <link rel="stylesheet" href="css/style.css">
 
     <style>
         .owl-dots {
             text-align: center;
             margin-top: 20px;
+            list-style: none;
+            padding: 0;
         }
 
         .owl-dot {
@@ -35,18 +29,18 @@
             width: 15px;
             height: 15px;
             margin: 5px;
-            background: #fff;
+            background: #ffffff;
             border-radius: 50%;
             cursor: pointer;
+            border: 1px solid #000;
         }
 
         .owl-dot.active {
-            background: #777;
+            background: #000;
         }
     </style>
 </head>
 <body>
-    <!--::header::-->
     <header class="main_menu home_menu">
         <div class="container">
             <div class="row align-items-center">
@@ -111,6 +105,10 @@
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-cart-plus"></i>
                                 </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown3">
+                                    <a class="dropdown-item" href="cart.html">Ver carrito</a>
+                                    <a class="dropdown-item" href="checkout.html">Checkout</a>
+                                </div>
                             </div>
                         </div>
                     </nav>
@@ -127,8 +125,9 @@
             </div>
         </div>
     </header>
-    <!--::header::-->
-    <!-- banner part start-->
+
+
+    <!-- banner -->
     <section class="banner_part">
         <div class="container">
             <div class="row align-items-center">
@@ -185,29 +184,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="owl-dots"></div>
+                    <ul class="owl-dots">
+                        <li class="owl-dot"></li>
+                        <li class="owl-dot"></li>
+                        <li class="owl-dot"></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
-    <!-- banner -->
-
-    <!-- jquery plugins here-->
     <script src="js/jquery-1.12.1.min.js"></script>
-    <!-- popper js -->
     <script src="js/popper.min.js"></script>
-    <!-- bootstrap js -->
     <script src="js/bootstrap.min.js"></script>
-    <!-- easing js -->
     <script src="js/jquery.magnific-popup.js"></script>
-    <!-- swiper js -->
     <script src="js/swiper.min.js"></script>
-    <!-- swiper js -->
     <script src="js/masonry.pkgd.js"></script>
-    <!-- particles js -->
     <script src="js/owl.carousel.min.js"></script>
     <script src="js/jquery.nice-select.min.js"></script>
-    <!-- slick js -->
     <script src="js/slick.min.js"></script>
     <script src="js/jquery.counterup.min.js"></script>
     <script src="js/waypoints.min.js"></script>
@@ -216,29 +209,40 @@
     <script src="js/jquery.form.js"></script>
     <script src="js/jquery.validate.min.js"></script>
     <script src="js/mail-script.js"></script>
-    <!-- custom js -->
     <script src="js/custom.js"></script>
-
     <script>
         $(document).ready(function(){
             console.log('Initializing Owl Carousel');
-            $('.banner_slider').owlCarousel({
-                loop:true,
-                margin:10,
-                nav:true,
+            var owl = $('.banner_slider');
+            owl.owlCarousel({
+                loop: true,
+                margin: 10,
+                nav: true,
                 dots: true,
-                responsive:{
-                    0:{
-                        items:1
-                    },
-                    600:{
-                        items:1
-                    },
-                    1000:{
-                        items:1
-                    }
-                }
+                items: 1,
+                autoplay: true,
+                autoplayTimeout: 3000, // segundos para cambiar de img
+                autoplayHoverPause: true,
+                dotsContainer: '.owl-dots' 
             });
+
+            owl.on('changed.owl.carousel', function(event) {
+                var index = event.item.index - event.relatedTarget._clones.length / 2;
+                var count = event.item.count;
+                if(index > count - 1) {
+                    index = index - count;
+                }
+                if(index < 0) {
+                    index = count + index;
+                }
+                $('.owl-dot').removeClass('active');
+                $('.owl-dot').eq(index).addClass('active');
+            });
+
+            $('.cart').on('click', function() {
+                console.log('Cart button clicked');
+            });
+            owl.trigger('changed.owl.carousel');
         });
     </script>
 </body>
