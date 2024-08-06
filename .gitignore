@@ -1,3 +1,4 @@
 .env
 api.http
-.http
+bd.js
+server.js
