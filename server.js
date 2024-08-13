@@ -5,7 +5,7 @@ const mysql = require('mysql2');
 require('dotenv').config();
 
 const app = express();
-const port = 8080;
+const port = 1234;
 
 
 const db = mysql.createConnection({

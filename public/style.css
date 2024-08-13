@@ -87,6 +87,51 @@ CSS STRUCTURE:
 /*--------------------------------------------------------------
 /** 1. VARIABLES
 --------------------------------------------------------------*/
+/* Asegúrate de que el margen inferior sea suficiente para separar las secciones */
+.main-menu {
+  justify-content: space-between;
+}
+
+.navbar-nav.menu-list {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#features img {
+  width: 40px;
+  height: auto;
+}
+
+#features h6 {
+  color: #333;
+  font-weight: 600;
+}
+
+#features p {
+  color: #777;
+  font-size: 0.875rem;
+}
+
+#features {
+  background-color: #F3F5F7;
+  padding: 1rem 0;
+}
+
+#features .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#features .col-md-4 {
+  flex: 1;
+  max-width: 33%;
+}
+
+#features .col-md-4:not(:last-child) {
+  border-right: 1px solid #CCCCCC;
+}
+
 :root {
   /* widths for rows and containers
      */
