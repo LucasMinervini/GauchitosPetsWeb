@@ -1,0 +1,301 @@
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos</title>
+    </head>
+    <style>
+        body {
+            background-color: #0000A3;
+            margin-top: 20px;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            margin-bottom: 20px;
+            background-color: #FFD53D;
+            
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-custom {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        h1{
+            color: orange;
+        }
+    </style>
+    <body>
+        <h1>Gestión de Productos</h1>
+
+    
+        <section>
+            <h2>Obtener producto por ID</h2>
+            <input type="text" id="productId" placeholder="ID del producto">
+            <button onclick="getProductById()">Buscar Producto</button>
+            <div id="product"></div>
+        </section>
+    
+        <section>
+            <h2>Obtener producto por nombre</h2>
+            <input type="text" id="productName" placeholder="Nombre del producto">
+            <button onclick="getProductByName()">Buscar Producto</button>
+            <div id="productByName"></div>
+        </section>
+    
+        <section>
+            <h2>Crear nuevo producto</h2>
+            <form id="createProductForm">
+                <input type="text" id="name" placeholder="Nombre" required>
+                <input type="text" id="sku" placeholder="SKU" required>
+                <input type="text" id="description" placeholder="Descripción" required>
+                <input type="number" id="retail_price" placeholder="Precio de venta" required>
+                <input type="number" id="cost" placeholder="Costo" required>
+                <input type="number" id="stock_quantity" placeholder="Cantidad en stock" required>
+                
+                <!-- Campo para múltiples categorías, separado por comas -->
+                <input type="text" id="category_ids" placeholder="IDs (separados por comas)" required>
+                
+                <input type="number" id="provider_id" placeholder="ID de proveedor" required>
+                <button type="submit">Crear Producto</button>
+            </form>
+          </section>
+    
+        <section>
+            <h2>Borrar producto por ID</h2>
+            <input type="text" id="deleteProductId" placeholder="ID del producto">
+            <button onclick="deleteProductById()">Borrar Producto</button>
+        </section>
+    
+        <section>
+            <h2>Actualizar producto por ID</h2>
+            <input type="text" id="updateProductId" placeholder="ID del producto" required>
+            <input type="text" id="updateName" placeholder="Nombre">
+            <input type="text" id="updateSku" placeholder="SKU">
+            <input type="text" id="updateDescription" placeholder="Descripción">
+            <input type="number" id="updateRetailPrice" placeholder="Nuevo precio de venta">
+            <input type="number" id="updateCost" placeholder="Nuevo costo">
+            <input type="number" id="updateStockQuantity" placeholder="Cantidad en stock">
+            <input type="number" id="updateCategoryId" placeholder="ID de categoría">
+            <input type="number" id="updateProviderId" placeholder="ID de proveedor">
+            <button onclick="updateProductById()">Actualizar Producto</button>
+            <div id="updateResponse"></div>
+        </section>
+<script>
+    const apiUrl = "http://localhost:8080/api/products";
+
+    // Obtener producto por ID
+    function getProductById() {
+        const productId = document.getElementById('productId').value;
+        fetch(`${apiUrl}/${productId}`)
+            .then(response => response.json())
+            .then(product => {
+                let output = '<h3>Detalle del producto</h3>';
+                output += `
+                    <p>ID: ${product.id}</p>
+                    <p>Nombre: ${product.name}</p>
+                    <p>SKU: ${product.sku}</p>
+                    <p>Descripción: ${product.description}</p>
+                    <p>Precio de venta: ${product.retail_price}</p>
+                    <p>Costo: ${product.cost}</p>
+                    <p>Cantidad en stock: ${product.stock_quantity}</p>
+                    <p>Categoría ID: ${product.category_id}</p>
+                    <p>Proveedor ID: ${product.provider_id}</p>
+                `;
+                document.getElementById('product').innerHTML = output;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Obtener producto por Nombre
+    function getProductByName() {
+        const productName = document.getElementById('productName').value;
+        fetch(`${apiUrl}/name/${productName}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Producto no encontrado');
+                }
+                return response.json();
+            })
+            .then(product => {
+                let output = '<h3>Detalle del producto</h3>';
+                output += `
+                    <p>ID: ${product.id}</p>
+                    <p>Nombre: ${product.name}</p>
+                    <p>SKU: ${product.sku}</p>
+                    <p>Descripción: ${product.description}</p>
+                    <p>Precio de venta: ${product.retail_price}</p>
+                    <p>Costo: ${product.cost}</p>
+                    <p>Cantidad en stock: ${product.stock_quantity}</p>
+                    <p>Categoría ID: ${product.category_id}</p>
+                    <p>Proveedor ID: ${product.provider_id}</p>
+                `;
+                document.getElementById('productByName').innerHTML = output;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('productByName').innerHTML = '<p>Producto no encontrado</p>';
+            });
+    }
+    // validaciones
+    function validateProduct(product) {
+        const errors = [];
+    
+        if (!/^[A-Za-z\s]+$/.test(product.name)) {
+            errors.push('El nombre solo puede contener letras y espacios');
+        }
+        if (!/^\d+$/.test(product.sku)) {
+            errors.push('El SKU solo puede contener números');
+        }
+        if (typeof product.description !== 'string') {
+            errors.push('La descripción tiene que ser un string');
+        }
+        if (typeof product.retail_price !== 'number' || product.retail_price < 1) {
+            errors.push('El precio de venta tiene que ser al menos 1');
+        }
+        if (typeof product.cost !== 'number' || product.cost < 0) {
+            errors.push('El costo tiene que ser al menos 0');
+        }
+        if (typeof product.stock_quantity !== 'number' || product.stock_quantity < 1) {
+            errors.push('La cantidad en stock tiene que ser al menos 1');
+        }
+        if (!Array.isArray(product.category_id) || product.category_id.some(id => typeof id !== 'number' || id <= 0)) {
+            errors.push('El ID de la categoría tiene que ser un array de números positivos');
+        }
+        if (typeof product.provider_id !== 'number' || product.provider_id <= 0) {
+            errors.push('El ID del proveedor tiene que ser un número positivo');
+        }
+    
+        return errors;
+    }
+
+
+    //CREAR PRODUCTO
+    document.getElementById('createProductForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Obtener los valores de los campos
+        const name = document.getElementById('name').value;
+        const sku = parseInt(document.getElementById('sku').value, 10);
+        const description = document.getElementById('description').value;
+        const retailPrice = parseFloat(document.getElementById('retail_price').value);
+        const cost = parseFloat(document.getElementById('cost').value);
+        const stockQuantity = parseInt(document.getElementById('stock_quantity').value, 10);
+        
+        // Obtener y procesar category_ids
+        const categoryIdsInput = document.getElementById('category_ids').value;
+        const categoryIds = categoryIdsInput.split(',').map(id => parseInt(id.trim(), 10));
+        
+        const providerId = parseInt(document.getElementById('provider_id').value, 10);
+    
+        // Crear el objeto con los datos a enviar
+        const productData = {
+            name: name,
+            sku: sku,  // Asegúrate de que el SKU sea un número
+            description: description,
+            retail_price: retailPrice,
+            cost: cost,
+            stock_quantity: stockQuantity,
+            category_id: categoryIds,  // Enviar como un array
+            provider_id: providerId
+        };
+    
+        // Enviar los datos al servidor
+        fetch('http://localhost:8080/api/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(productData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => { throw new Error(errorData.error); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Producto creado:', data);
+            alert('Producto creado exitosamente');
+        })
+        .catch(error => {
+            console.error('Error al crear el producto:', error.message);
+            alert('Error al crear el producto: ' + error.message);
+        });
+    });
+
+    // Borrar producto por ID
+    function deleteProductById() {
+        const productId = document.getElementById('deleteProductId').value;
+        fetch(`${apiUrl}/${productId}`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('Producto borrado exitosamente');
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Actualizar producto por ID
+    function updateProductById() {
+        const productId = document.getElementById('updateProductId').value;
+        const updatedData = {};
+
+        const fields = [
+            'updateName',
+            'updateSku',
+            'updateDescription',
+            'updateRetailPrice',
+            'updateCost',
+            'updateStockQuantity',
+            'updateCategoryId',
+            'updateProviderId'
+        ];
+
+        fields.forEach(field => {
+            const value = document.getElementById(field).value;
+            if (value) {
+                const key = field.replace('update', '').toLowerCase();
+                updatedData[key] = isNaN(value) ? value : parseFloat(value);
+            }
+        });
+
+        if (Object.keys(updatedData).length === 0) {
+            alert('Por favor, proporciona al menos un campo para actualizar');
+            return;
+        }
+
+        fetch(`${apiUrl}/${productId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el producto');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('updateResponse').innerHTML = 'Producto actualizado exitosamente';
+                console.log('Producto actualizado:', data);
+            })
+            .catch(error => {
+                document.getElementById('updateResponse').innerHTML = 'Error al actualizar el producto';
+                console.error('Error:', error);
+            });
+    }
+    </script> 
+    </body>
+    </html>

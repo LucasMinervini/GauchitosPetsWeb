@@ -88,6 +88,22 @@ CSS STRUCTURE:
 /** 1. VARIABLES
 --------------------------------------------------------------*/
 /* Asegúrate de que el margen inferior sea suficiente para separar las secciones */
+
+/* Alinea las direcciones a la izquierda */
+.main-menu .d-flex.align-items-center {
+  justify-content: flex-start; /* Alinea las direcciones a la izquierda */
+}
+
+/* Centrar el menú de navegación */
+.main-menu .navbar-nav {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Asegúrate de que los íconos de cuenta, wishlist y carrito estén alineados a la derecha */
+.main-menu .d-flex.align-items-end {
+  justify-content: flex-end;
+}
 .main-menu {
   justify-content: space-between;
 }
