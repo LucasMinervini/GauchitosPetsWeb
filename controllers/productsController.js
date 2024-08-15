@@ -6,55 +6,62 @@ const { validateProd } = require('../schema/product.js');
 const { ValidatePartialProd } = require('../schema/product.js');
 
 
-// Crear un nuevo producto
+// Controlador para crear un producto
 const createProduct = (req, res) => {
+  console.log('req.body:', req.body);
+  console.log('req.file:', req.file);
+
   const result = validateProd(req.body);
 
   if (!result.success) {
-    return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
+      return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
 
-  const { name, sku, description, retail_price, cost, stock_quantity, category_id, provider_id } = result.data; // category_id es ahora un array
+  const { name, sku, description, retail_price, cost, stock_quantity, provider_id, category_id } = result.data;
+  const imageUrl = req.file ? `/images/${req.file.filename}` : null;
+
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
 
-  // Verificar si el provider_id es válido
   db.query(providerQuery, [provider_id], (err, providerResults) => {
-    if (err || providerResults.length === 0) {
-      return res.status(400).send('Invalid provider_id');
-    }
-
-    // Genera un UUID para el nuevo producto
-    const newId = crypto.randomUUID(); 
-    const query = `
-      INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    // Ejecutar la consulta para insertar el nuevo producto
-    db.query(query, [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id], (err, results) => {
-      if (err) {
-        console.error('Error executing query:', err);
-        return res.status(500).send('Error executing query');
+      if (err || providerResults.length === 0) {
+          return res.status(400).send('Invalid provider_id');
       }
 
-      // Ahora manejar la inserción en product_categories
-      const categoryInsertQuery = 'INSERT INTO product_categories (product_id, category_id) VALUES ?';
+      const newId = crypto.randomUUID();
+      const insertQuery = `
+          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id, image_url) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
 
-      // Preparar los valores para la inserción
-      const categoryValues = category_id.map(catId => [newId, catId]);
+      db.query(insertQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id, imageUrl], (err, results) => {
+          if (err) {
+              console.error('Error executing query:', err);
+              return res.status(500).send('Error executing query');
+          }
 
-      db.query(categoryInsertQuery, [categoryValues], (err) => {
-        if (err) {
-          console.error('Error inserting categories:', err);
-          return res.status(500).send('Error inserting categories');
-        }
+          const categoryInsertQuery = 'INSERT INTO product_categories (product_id, category_id) VALUES ?';
+          const categoryValues = category_id.map(catId => [newId, catId]);
 
-        // Retorna la respuesta con el id del nuevo producto y los datos validados
-        res.status(201).send({ id: newId, ...result.data });
+          db.query(categoryInsertQuery, [categoryValues], (err) => {
+              if (err) {
+                  console.error('Error inserting categories:', err.sqlMessage || err.message);
+                  return res.status(500).send('Error inserting categories');
+              }
+
+              res.status(201).send({ id: newId, ...result.data, image_url: imageUrl });
+          });
       });
-    });
   });
 };
+
+
+
+
+
+
+
+
+
 
 
 // Obtener todos los productos
@@ -174,7 +181,7 @@ const getProductById = (req, res) => {
   });
 };
 
-// Actualizar un producto por ID
+//UPDATE de producto
 const updateProduct = (req, res) => {
 
   // Validar la entrada parcial del producto
@@ -184,7 +191,7 @@ const updateProduct = (req, res) => {
     return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
   
-  const { id } = req.params;
+  const { id } = req.params; // ID del producto
   const updates = req.body;
 
   // Verificar que haya campos para actualizar
@@ -192,30 +199,81 @@ const updateProduct = (req, res) => {
     return res.status(400).json({ error: 'No se proporcionaron campos para actualizar' });
   }
 
-  const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
-  const values = Object.values(updates);
+  // Procesar campos de actualización
+  const fields = Object.keys(updates).filter(key => key !== 'category_id').map(key => `${key} = ?`).join(', ');
+  const values = Object.values(updates).filter(value => !Array.isArray(value));
 
-  const query = `
-      UPDATE products 
-      SET ${fields}
-      WHERE id = ?
-  `;
+  // Iniciar la transacción
+  db.beginTransaction(err => {
+    if (err) {
+      console.error('Error iniciando la transacción:', err);
+      return res.status(500).send('Error iniciando la transacción');
+    }
 
-  db.query(query, [...values, id], (err, results) => {
+    const updateQuery = `
+        UPDATE products 
+        SET ${fields}
+        WHERE id = ?
+    `;
+
+    db.query(updateQuery, [...values, id], (err, results) => {
       if (err) {
-          console.error('Error executing query:', err);
+        return db.rollback(() => {
+          console.error('Error ejecutando la consulta de actualización:', err);
           res.status(500).send('Error ejecutando la consulta');
-          return;
+        });
       }
 
-      if (results.affectedRows === 0) {
-          res.status(404).send('Producto no encontrado');
-          return;
-      }
+      // Si el campo category_id está presente y es un array, actualizarlo
+      if (updates.category_id && Array.isArray(updates.category_id)) {
+        const deleteQuery = `DELETE FROM product_categories WHERE product_id = ?`;
+        const insertQuery = `INSERT INTO product_categories (product_id, category_id) VALUES ?`;
+        const categoryValues = updates.category_id.map(catId => [id, catId]);
 
-      res.status(200).json({ message: 'Producto actualizado exitosamente' });
+        db.query(deleteQuery, [id], (err) => {
+          if (err) {
+            return db.rollback(() => {
+              console.error('Error al eliminar categorías anteriores:', err);
+              res.status(500).send('Error eliminando categorías anteriores');
+            });
+          }
+
+          db.query(insertQuery, [categoryValues], (err) => {
+            if (err) {
+              return db.rollback(() => {
+                console.error('Error al insertar nuevas categorías:', err);
+                res.status(500).send('Error insertando nuevas categorías');
+              });
+            }
+
+            db.commit(err => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error('Error al confirmar la transacción:', err);
+                  res.status(500).send('Error confirmando la transacción');
+                });
+              }
+
+              res.status(200).json({ message: 'Producto actualizado exitosamente, incluyendo categorías' });
+            });
+          });
+        });
+      } else {
+        db.commit(err => {
+          if (err) {
+            return db.rollback(() => {
+              console.error('Error al confirmar la transacción:', err);
+              res.status(500).send('Error confirmando la transacción');
+            });
+          }
+
+          res.status(200).json({ message: 'Producto actualizado exitosamente' });
+        });
+      }
+    });
   });
 };
+
 
 
 // Eliminar un producto por ID

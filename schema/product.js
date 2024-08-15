@@ -15,17 +15,47 @@ const productSchema = z.object({
     invalid_type_error: 'Tiene que ser un número'
   }).min(1),
   cost: z.number().min(1),
-  stock_quantity: z.number().min(1), 
-  category_id: z.array(z.number().positive()).nonempty({
-    message: 'Debes asignar al menos una categoría'
-  }),
+  stock_quantity: z.number().min(1),
+  category_id: z.array(z.number()).min(1, 'Debes asignar al menos una categoría'),
   provider_id: z.number().positive()
 });
 
 
+
+
 function validateProd(object) {
-  return productSchema.safeParse(object);
+  let parsedObject;
+
+  try {
+      parsedObject = {
+          ...object,
+          sku: parseInt(object.sku, 10),
+          retail_price: parseFloat(object.retail_price),
+          cost: parseFloat(object.cost),
+          stock_quantity: parseInt(object.stock_quantity, 10),
+          category_id: Array.isArray(object.category_id) ? object.category_id.map(id => parseInt(id, 10)) : JSON.parse(object.category_id),
+          provider_id: parseInt(object.provider_id, 10),
+      };
+
+      console.log('Category IDs before validation:', parsedObject.category_id, 'Length:', parsedObject.category_id.length);
+
+      // Asegurarse de que category_id no esté vacío y es realmente un array
+      if (!Array.isArray(parsedObject.category_id) || parsedObject.category_id.length === 0) {
+          throw new Error('Debes asignar al menos una categoría');
+      }
+
+  } catch (error) {
+      return {
+          success: false,
+          error: {
+              errors: [{ message: error.message }]
+          }
+      };
+  }
+
+  return productSchema.safeParse(parsedObject);
 }
+
 function ValidatePartialProd(object){
   return productSchema.partial().safeParse(object);
 }

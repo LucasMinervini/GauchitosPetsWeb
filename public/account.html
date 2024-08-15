@@ -25,197 +25,165 @@
 <body>
     
 
-    <header>
-        <div class="container py-2">
-          <div class="row py-4 pb-0 pb-sm-4 align-items-center ">
-    
+  <header>
+    <div class="container py-2">
+        <div class="row py-4 pb-0 pb-sm-4 align-items-center">
             <div class="col-sm-4 col-lg-3 text-center text-sm-start">
-              <div class="main-logo">
-                <a href="index.html">
-                  <img src="images/logo.png" alt="logo" class="img-fluid" style="width: 50%;">
-                </a>
-              </div>
-            </div>
-    
-            <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
-              <div class="search-bar border rounded-2 px-3 border-dark-subtle">
-                <form id="search-form" class="text-center d-flex align-items-center" action="" method="">
-                  <input type="text" class="form-control border-0 bg-transparent"
-                    placeholder="Podés Buscar mas de 1.000 productos" />
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <path fill="currentColor"
-                      d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
-                  </svg>
-                </form>
-              </div>
-            </div>
-    
-            <div
-      class="col-sm-8 col-lg-4 d-flex justify-content-end gap-5 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
-      <div class="support-box text-end d-none d-xl-block">
-        <span class="fs-6 secondary-font text-muted">Liniers</span>
-        <div class="d-flex align-items-center">
-          <img width="40" height="40" src="https://img.icons8.com/3d-fluency/94/whatsapp.png" alt="whatsapp"/>
-        <h5 class="mb-0" style="font-size: medium;">+54112525-7949</h5>
-        </div>
-      </div>
-      <div class="support-box text-end d-none d-xl-block">
-        <span class="fs-6 secondary-font text-muted">La Plata</span>
-        <div class="d-flex align-items-center">
-          <img width="40" height="40" src="https://img.icons8.com/3d-fluency/94/whatsapp.png" alt="whatsapp"/>
-          <h5 class="mb-0" style="font-size: medium;">+54113117-0104</h5>
-        </div>
-      </div>
-    </div>
-    
-    
-    
-            </div>
-          </div>
-        </div>
-    
-        <div class="container-fluid">
-          <hr class="m-0">
-        </div>
-    
-        <div class="container">
-          <nav class="main-menu d-flex navbar navbar-expand-lg ">
-    
-            <div class="d-flex d-lg-none align-items-end mt-3">
-              <ul class="d-flex justify-content-end list-unstyled m-0">
-                <li>
-                  <a href="account.html" class="mx-3">
-                    <iconify-icon icon="healthicons:person" class="fs-4"></iconify-icon>
-                  </a>
-                </li>
-                <li>
-                  <a href="wishlist.html" class="mx-3">
-                    <iconify-icon icon="mdi:heart" class="fs-4"></iconify-icon>
-                  </a>
-                </li>
-    
-                <li>
-                  <a href="#" class="mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart"
-                    aria-controls="offcanvasCart">
-                    <iconify-icon icon="mdi:cart" class="fs-4 position-relative"></iconify-icon>
-                    <span class="position-absolute translate-middle badge rounded-circle bg-primary pt-2">
-                      0
-                    </span>
-                  </a>
-                </li>
-    
-                <li>
-                  <a href="#" class="mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSearch"
-                    aria-controls="offcanvasSearch">
-                    <iconify-icon icon="tabler:search" class="fs-4"></iconify-icon>
-                    </span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-    
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-              aria-controls="offcanvasNavbar">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-    
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-    
-              <div class="offcanvas-header justify-content-center">
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-              </div>
-    
-              <div class="offcanvas-body justify-content-between">
-                <select class="filter-categories border-0 mb-0 me-5" style="background-color: transparent; color:#000000">
-                  <option>Categorias de Compra</option>
-                  <option>Ropa</option>
-                  <option>Comida</option>
-                  <option>Accesorios</option>
-                </select>
-    
-                <ul class="navbar-nav menu-list list-unstyled d-flex gap-md-3 mb-0" >
-                  <li class="nav-item">
-                    <a href="index.html" class="nav-link active">Inicio</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="shop.html" class="nav-link">Productos</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="blog.html" class="nav-link">Sobre Nosotros</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="contact.html" class="nav-link">Contáctanos</a>
-                  </li>
-                  
-                  
-                </ul>
-    
-                <div class="d-none d-lg-flex align-items-end">
-                  <ul class="d-flex justify-content-end list-unstyled m-0">
-                    <li>
-                      <a href="account.html" class="mx-3">
-                        <iconify-icon icon="healthicons:person" class="fs-4"></iconify-icon>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="wishlist.html" class="mx-3">
-                        <iconify-icon icon="mdi:heart" class="fs-4"></iconify-icon>
-                      </a>
-                    </li>
-    
-                    <li class="">
-                      <a href="#" class="mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                        <iconify-icon icon="mdi:cart" class="fs-4 position-relative"></iconify-icon>
-                        <span id="cart-badge" class="position-absolute translate-middle badge rounded-circle bg-primary pt-2">
-                          0
-                        </span>
-                      </a>
-                    </li>
-                  </ul>
-    
+                <div class="main-logo">
+                    <a href="index.html">
+                        <img src="images/logo.png" alt="logo" class="img-fluid" style="width: 50%;">
+                    </a>
                 </div>
-    
-              </div>
-    
             </div>
-    
-          </nav>
-        </div>
-      </header>
 
-  <section id="account" class="my-5">
-    <div class="container py-5">
-      <h2 class="display-3 fw-normal text-center">Registrase</h2>
-      <form class="my-5">
-        <div class="row mb-3">
-          <div class="col">
-            <label for="first-name" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="first-name" placeholder="Nombre">
+            <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
+                <div class="search-bar border rounded-2 px-3 border-dark-subtle">
+                    <form id="search-form" class="text-center d-flex align-items-center" action="" method="">
+                        <input type="text" class="form-control border-0 bg-transparent" placeholder="Podés Buscar más de 1.000 productos" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
+                        </svg>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-sm-8 col-lg-4 d-flex justify-content-between gap-5 align-items-center mt-4 mt-sm-0">
+              <!-- Liniers -->
+              <div class="support-box text-center d-none d-xl-block">
+                  <span class="fs-6 secondary-font text-muted d-block">Liniers</span>
+                  <div class="d-flex justify-content-center align-items-center mb-2">
+                      <a href="https://wa.me/541125257949?text=Hola!%20en%20que%20podemos%20ayudarlo?" target="_blank" class="d-flex align-items-center">
+                          <img width="30" height="30" src="https://img.icons8.com/3d-fluency/94/whatsapp.png" alt="whatsapp" class="me-2" />
+                          <h5 class="mb-0" style="font-size: medium;">+54112525-7949</h5>
+                      </a>
+                  </div>
+                  <div class="d-flex justify-content-center align-items-center">
+                      <a href="https://www.google.com/maps?q=Av.+Lisandro+de+la+Torre+402,+Liniers,+Argentina" target="_blank">
+                          <iconify-icon icon="mdi:map-marker" class="fs-4 me-2"></iconify-icon>
+                      </a>
+                      <span class="fs-6 secondary-font text-muted">Av. Lisandro de la Torre 402</span>
+                  </div>
+              </div>
+              <!-- La Plata -->
+              <div class="support-box text-center d-none d-xl-block">
+                  <span class="fs-6 secondary-font text-muted d-block">La Plata</span>
+                  <div class="d-flex justify-content-center align-items-center mb-2">
+                      <a href="https://wa.me/541131170104?text=Hola!%20en%20que%20podemos%20ayudarlo?" target="_blank" class="d-flex align-items-center">
+                          <img width="30" height="30" src="https://img.icons8.com/3d-fluency/94/whatsapp.png" alt="whatsapp" class="me-2" />
+                          <h5 class="mb-0" style="font-size: medium;">+54113117-0104</h5>
+                      </a>
+                  </div>
+                  <div class="d-flex justify-content-center align-items-center">
+                      <a href="https://www.google.com/maps?q=Calle+5+e/44+y+45+n°628,+La+Plata,+Argentina" target="_blank">
+                          <iconify-icon icon="mdi:map-marker" class="fs-4 me-2"></iconify-icon>
+                      </a>
+                      <span class="fs-6 secondary-font text-muted">Calle 5 e/44 y 45 n°628, La Plata</span>
+                  </div>
+              </div>
           </div>
-          <div class="col">
-            <label for="last-name" class="form-label">Apellido</label>
-            <input type="text" class="form-control" id="last-name" placeholder="Apellido">
-          </div>
+          
+                 
         </div>
-        <div class="mb-3">
-          <label for="email" class="form-label">Correo Electrónico</label>
-          <input type="email" class="form-control" id="email" placeholder="Correo Electrónico">
-        </div>
-        <div class="mb-3">
-          <label for="phone" class="form-label">Teléfono</label>
-          <input type="text" class="form-control" id="phone" placeholder="Teléfono">
-        </div>
-        <div class="mb-3">
-          <label for="address" class="form-label">Dirección</label>
-          <input type="text" class="form-control" id="address" placeholder="Dirección">
-        </div>
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary btn-lg">Guardar Cambios</button>
-        </div>
-      </form>
     </div>
-  </section>
 
+    <div class="container-fluid">
+        <hr class="m-0">
+    </div>
+
+    <div class="container">
+        <nav class="main-menu d-flex navbar navbar-expand-lg align-items-center">
+            <!-- Ubicaciones alineadas a la izquierda -->
+            <div class="d-flex align-items-center gap-3 flex-shrink-0" style="margin-right: auto;">
+                <div class="location-box d-flex align-items-center">
+                    
+                    <span class="fs-6 secondary-font text-muted"></span>
+                </div>
+                <div class="location-box d-flex align-items-center">
+                   
+                    <span class="fs-6 secondary-font text-muted"></span>
+                </div>
+            </div>
+
+            <!-- Menú desplegable y navegación centrada -->
+            <ul class="navbar-nav menu-list list-unstyled d-flex justify-content-center gap-md-3 mb-0" style="margin-left: auto; margin-right: auto;">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link active" style="font-size: x-large;">Inicio</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="perrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: x-large;">Perros</a>
+                    <ul class="dropdown-menu" aria-labelledby="perrosDropdown">
+                        <li><a class="dropdown-item" href="alimentos-perros.html">Alimentos</a></li>
+                        <li><a class="dropdown-item" href="juguetes-perros.html">Juguetes</a></li>
+                        <li><a class="dropdown-item" href="accesorios-perros.html">Accesorios</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="gatosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: x-large;">Gatos</a>
+                    <ul class="dropdown-menu" aria-labelledby="gatosDropdown">
+                        <li><a class="dropdown-item" href="alimentos-gatos.html">Alimentos</a></li>
+                        <li><a class="dropdown-item" href="juguetes-gatos.html">Juguetes</a></li>
+                        <li><a class="dropdown-item" href="accesorios-gatos.html">Accesorios</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="otrosAnimalesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: x-large;">Otros Animales</a>
+                    <ul class="dropdown-menu" aria-labelledby="otrosAnimalesDropdown">
+                        <li><a class="dropdown-item" href="roedores.html">Roedores</a></li>
+                        <li><a class="dropdown-item" href="peces.html">Peces</a></li>
+                        <li><a class="dropdown-item" href="reptiles.html">Reptiles</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="farmaciaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: x-large;">Farmacia</a>
+                    <ul class="dropdown-menu" aria-labelledby="farmaciaDropdown">
+                        <li><a class="dropdown-item" href="medicamentos.html">Medicamentos</a></li>
+                        <li><a class="dropdown-item" href="suplementos.html">Suplementos</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- Íconos de cuenta, wishlist, carrito alineados a la derecha -->
+            <div class="d-flex align-items-end flex-shrink-0">
+                <ul class="d-flex justify-content-end list-unstyled m-0">
+                    <li>
+                        <a href="account.html" class="mx-3">
+                            <iconify-icon icon="healthicons:person" class="fs-4"></iconify-icon>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="wishlist.html" class="mx-3">
+                            <iconify-icon icon="mdi:heart" class="fs-4"></iconify-icon>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
+                            <iconify-icon icon="mdi:cart" class="fs-4 position-relative"></iconify-icon>
+                            <span id="cart-badge" class="position-absolute translate-middle badge rounded-circle bg-primary pt-2">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+      <div class="account-container">
+        <h2>Información de la Cuenta</h2>
+        <div id="account-info">
+            <p><strong>Nombre:</strong> <span id="user-name"></span></p>
+            <p><strong>Email:</strong> <span id="user-email"></span></p>
+            <!-- Agrega más información del usuario si es necesario -->
+        </div>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+<script> // Fetch user account info from the server
+  fetch('/account-info')
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('user-name').textContent = data.name;
+          document.getElementById('user-email').textContent = data.email;
+      })
+      .catch(error => console.error('Error fetching account info:', error));</script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="js/bootstrap.bundle.min.js"></script>
   <script src="js/swiper.min.js"></script>

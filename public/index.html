@@ -266,7 +266,7 @@
             <div class="d-flex align-items-end flex-shrink-0">
                 <ul class="d-flex justify-content-end list-unstyled m-0">
                     <li>
-                        <a href="account.html" class="mx-3">
+                        <a href="login.html" class="mx-3">
                             <iconify-icon icon="healthicons:person" class="fs-4"></iconify-icon>
                         </a>
                     </li>
@@ -335,7 +335,7 @@
 
           <!-- Paga con Tarjeta -->
           <div class="col-md-4 d-flex justify-content-center align-items-center">
-            <img src="images/card.png" alt="" style="margin-right: 5%;">
+            <img src="images/credit-card.png" alt="" style="margin-right: 5%;">
               <div class="text-start">
                   <h6 class="mb-1 fw-bold">PAGA CON TARJETA</h6>
                   <p class="text-muted mb-0">También podés pagar en cuotas</p>
@@ -352,7 +352,7 @@
       <div class="row my-5">
         <div class="col text-center">
           <a href="#" class="categories-item">
-            <img src="images/veterinariaPerroYgato.webp" alt="vetenerinaria" style=" width: 200px; height: 200px;">
+            <img src="images/veterinaria.jpg" alt="vetenerinaria" style=" width: 200px; height: 200px;">
             <h5>Veterinaria</h5>
           </a>
         </div>
@@ -490,6 +490,23 @@
       <div class="col-6 col-md-3 my-3">
         <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
       </div>
+
+      <div class="col-6 col-md-3 my-3">
+        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
+      </div>
+
+      <div class="col-6 col-md-3 my-3">
+        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
+      </div>
+
+      <div class="col-6 col-md-3 my-3">
+        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
+      </div>
+
+      <div class="col-6 col-md-3 my-3">
+        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
+      </div>
+
 
     </div>
   </div>
@@ -730,12 +747,24 @@
     </div>
   </section>
 
-  <div class="d-flex justify-content-center align-items-center">
-    <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
-      <h5 class="d-flex justify-content-center align-items-center">Seguinos !&#x1F44D;</h5>
-      <img src="images/logoOrigi.png" alt="Instagram" width="150" height="150" class="img-fluid">
-    </a>
-  </div>
+  <div class="d-flex flex-column justify-content-center align-items-center">
+    <h5 class="display-5 my-2 text-center">Seguinos en todas las redes! &#x1F44D;</h5>
+    <div class="d-flex justify-content-center align-items-center">
+        <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
+            <img src="images/instagramLogo.png.crdownload" alt="Instagram" width="80" height="80" class="img-fluid ">
+        </a>
+        <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
+            <img src="images/Twitter X Icon.png" alt="x" width="100" height="100" class="img-fluid mx-2">
+        </a>
+        <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
+            <img src="images/facebook.png" alt="facebook" width="80" height="80" class="img-fluid mx-2">
+        </a>
+        <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
+            <img src="images/Tiktok-Logo-2017.png" alt="Instagram" width="150" height="150" class="img-fluid mx-2">
+        </a>
+    </div>
+</div>
+
   
   
   
@@ -1122,32 +1151,36 @@ document.addEventListener('DOMContentLoaded', function() {
               container.innerHTML = ''; // Limpiar el contenedor antes de agregar los productos
 
               products.forEach(product => {
-                  const productElement = `
-                      <div class="swiper-slide">
-                          <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                              <a href="single-product.html"><img src="images/eukanuba.jpg" class="img-fluid rounded-4" alt="${product.name}"></a>
-                              <div class="card-body p-0">
-                                  <a href="single-product.html">
-                                      <h3 class="card-title pt-4 m-0">${product.name}</h3>
-                                  </a>
-                                  <div class="card-text">
-                                      <span class="rating secondary-font">
-                                          <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                          <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                          <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                          <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                          <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                          5.0
-                                      </span>
-                                      <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
-                                      <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                          Agregar al carrito
-                                      </button>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  `;
+                // Verificar que se está cargando la imagen correctamente
+                console.log('Producto:', product);
+
+                const productElement = `
+                <div class="swiper-slide">
+                    <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                        <a href="single-product.html"><img src="${product.image_url}" class="img-fluid rounded-4" alt="${product.name}"></a>
+                        <div class="card-body p-0">
+                            <a href="single-product.html">
+                                <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                            </a>
+                            <div class="card-text">
+                                <span class="rating secondary-font">
+                                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                    5.0
+                                </span>
+                                <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
+                                <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                    Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
                   container.insertAdjacentHTML('beforeend', productElement);
               });
 
@@ -1279,6 +1312,22 @@ document.addEventListener('DOMContentLoaded', function() {
   loadProducts('http://localhost:8080/api/categories/2', '#products-carousel', '#products-carousel');
 });
 
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Seleccionar todos los elementos que representan un producto
+  const productCards = document.querySelectorAll('.product-card');
+
+  // Añadir un event listener para manejar el clic en cada tarjeta de producto
+  productCards.forEach(card => {
+      card.addEventListener('click', () => {
+          const productId = card.getAttribute('data-id'); // Obtener el ID del producto del atributo data-id
+          if (productId) {
+              // Redirigir a la página de detalles del producto
+              window.location.href = `single-product.html?id=${productId}`;
+          }
+      });
+  });
+});
 
   </script>
 </body>

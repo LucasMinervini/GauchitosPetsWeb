@@ -1,0 +1,36 @@
+<div id="product-details">
+    <h1 id="product-name">Cargando...</h1>
+    <img id="product-image" src="" alt="Imagen del producto">
+    <p id="product-description"></p>
+    <p><strong>Precio:</strong> $<span id="product-price"></span></p>
+    <p><strong>Costo:</strong> $<span id="product-cost"></span></p>
+    <p><strong>Cantidad en stock:</strong> <span id="product-stock"></span></p>
+    <p><strong>Categorías:</strong> <span id="product-categories"></span></p>
+    <p><strong>Proveedor:</strong> <span id="product-provider"></span></p>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    if (productId) {
+        fetch(`/api/products/${productId}`)
+            .then(response => response.json())
+            .then(product => {
+                document.getElementById('product-name').textContent = product.name;
+                document.getElementById('product-description').textContent = product.description;
+                document.getElementById('product-price').textContent = product.retail_price;
+                document.getElementById('product-cost').textContent = product.cost;
+                document.getElementById('product-stock').textContent = product.stock_quantity;
+                document.getElementById('product-categories').textContent = product.category_id ? product.category_id.join(', ') : 'N/A';
+                document.getElementById('product-provider').textContent = product.provider_id;
+                document.getElementById('product-image').src = product.image_url; // Mostrar la imagen
+            })
+            .catch(error => {
+                console.error('Error al obtener los detalles del producto:', error);
+                document.getElementById('product-name').textContent = 'Error al cargar el producto';
+            });
+    } else {
+        document.getElementById('product-name').textContent = 'Producto no encontrado';
+    }
+</script>
