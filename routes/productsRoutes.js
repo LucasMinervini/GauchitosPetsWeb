@@ -3,6 +3,7 @@ const express = require('express');
 const productController = require('../controllers/productsController');
 const multer = require('multer');
 const path = require('path');
+const orderController = require('../controllers/productsController');
 
 const router = express.Router();
 
@@ -41,5 +42,8 @@ router.get('/price/:id', productController.getPriceProductById);
 
 // Obtener producto por categoría
 router.get('/categories/:category_id', productController.getCategory);
+
+// Ruta de las compras
+router.post('/orders', orderController.createOrder);
 
 module.exports = router;

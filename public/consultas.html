@@ -98,7 +98,7 @@
     // Obtener producto por Nombre
     function getProductByName() {
         const productName = document.getElementById('productName').value;
-        fetch(`${apiUrl}/name/${productName}`)
+        fetch(`${apiUrl}/${productName}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Producto no encontrado');

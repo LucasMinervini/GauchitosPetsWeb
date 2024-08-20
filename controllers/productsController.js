@@ -54,16 +54,6 @@ const createProduct = (req, res) => {
   });
 };
 
-
-
-
-
-
-
-
-
-
-
 // Obtener todos los productos
 const getAllProducts = (req, res) => {
  
@@ -293,6 +283,54 @@ const deleteProductById = (req, res) => {
   });
 };
 
+// Plasmo las compras en la base de datos 
+const createOrder = async (req, res) => {
+  const { userId, cartItems, totalAmount } = req.body;
+
+  try {
+      // Crear la orden en la base de datos
+      const orderQuery = `
+          INSERT INTO orders (user_id, total_amount, status) 
+          VALUES (?, ?, ?)
+      `;
+      
+      const orderResult = await new Promise((resolve, reject) => {
+          db.query(orderQuery, [userId, totalAmount, 'pending'], (err, result) => {
+              if (err) {
+                  return reject(err);
+              }
+              resolve(result);
+          });
+      });
+
+      const orderId = orderResult.insertId;
+
+      // Insertar cada item en la base de datos
+      const itemQuery = `
+          INSERT INTO order_items (order_id, product_id, quantity, price) 
+          VALUES (?, ?, ?, ?)
+      `;
+
+      const orderItemPromises = cartItems.map(item => {
+          return new Promise((resolve, reject) => {
+              db.query(itemQuery, [orderId, item.productId, item.quantity, item.price], (err, result) => {
+                  if (err) {
+                      return reject(err);
+                  }
+                  resolve(result);
+              });
+          });
+      });
+
+      await Promise.all(orderItemPromises);
+
+      res.status(200).json({ message: 'Order placed successfully', orderId });
+  } catch (error) {
+      console.error('Error placing order:', error);
+      res.status(500).send('Server error');
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -301,5 +339,6 @@ module.exports = {
   deleteProductById,
   getProductByName,
   getPriceProductById,
-  getCategory
+  getCategory,
+  createOrder
 };

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="/css/style.css">
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -49,22 +48,12 @@
         button:hover {
             background-color: #0056b3;
         }
-        
     </style>
-</head>
-<body>
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <div class="login-container">
         <h2>Login</h2>
-        <form id="loginForm" action="/login" method="POST">
+        <form id="loginForm">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required>
 
@@ -75,11 +64,35 @@
         </form>
         <p>No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Realizar la solicitud POST a la API de autenticación
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Si la autenticación es exitosa, redirige al usuario
+                    window.location.href = '/';
+                } else {
+                    // Si la autenticación falla, muestra un mensaje de error
+                    return response.text().then(text => { throw new Error(text); });
+                }
+            })
+            .catch(error => {
+                alert("Error: " + error.message);
+            });
+        });
+    </script>
 </body>
 </html>
-
-
-    <script src="/js/main.js"></script>
-</body>
-</html>
- 

@@ -73,12 +73,11 @@ app.get("/", (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  const { email, password, name } = req.body;
-  
-  console.log('Received data:', { email, password, name }); // Verifica los datos recibidos
+  const { email, password, name, address, phone } = req.body;
+  console.log(req.body);
 
-  if (!password) {
-    return res.status(400).send('Password is required');
+  if (!email || !password || !name) {
+    return res.status(400).send('Email, password, and name are required');
   }
 
   bcrypt.hash(password, 10, (err, hash) => {
@@ -87,17 +86,27 @@ app.post('/register', (req, res) => {
       return res.status(500).send('Error hashing password');
     }
 
-    const query = 'INSERT INTO users (email, password, name) VALUES (?, ?, ?)';
-    db.query(query, [email, hash, name], (err, results) => {
+    const query = `
+      INSERT INTO users (email, password, name, address, phone, user_type_id) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    
+    const user_type_id = 1;
+
+    db.query(query, [email, hash, name, address, phone, user_type_id], (err, results) => {
       if (err) {
         console.error('Error inserting user:', err);
         return res.status(500).send('Server error');
       }
-      res.send('User registered successfully');
+
+      // Redirigir al usuario a la página de inicio
+      res.status(200).json({ message: 'User registered successfully', redirectUrl: '/index.html' });
     });
   });
 });
 
+
+// Ruta para loguear usuarios
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   
@@ -118,13 +127,13 @@ app.post('/login', (req, res) => {
         return res.status(500).send('Error comparing passwords');
       }
       if (!match) {
-        return res.status(400).send('Incorrect password');
+        return res.status(400).send('Contraseña incorrecta');
       }
 
       // Iniciar sesión y almacenar la información del usuario en la sesión
       req.session.userId = user.id;
       req.session.email = user.email;
-      req.session.name = user.name; // Asumiendo que tienes un campo 'name' en tu tabla de usuarios
+      req.session.name = user.name;
 
       // Guardar la sesión en la base de datos
       req.session.save(err => {
@@ -138,24 +147,41 @@ app.post('/login', (req, res) => {
   });
 });
 
+// Ruta para obtener la información de la cuenta del usuario
+app.get('/account-info', (req, res) => {
+  if (!req.session.userId) {
+      return res.status(401).send('Unauthorized');
+  }
 
+  const query = 'SELECT name, email, address, phone, user_type_id FROM users WHERE id = ?';
+  db.query(query, [req.session.userId], (err, results) => {
+      if (err) {
+          console.error('Error fetching account info:', err);
+          return res.status(500).send('Server error');
+      }
+      if (results.length === 0) {
+          return res.status(404).send('User not found');
+      }
 
-// Ruta para obtener datos de productos (Ejemplo de implementación simple)
-app.get('/api/products/:id', (req, res) => {
-  const productId = req.params.id;
-  const query = 'SELECT * FROM products WHERE id = ?';
-  db.query(query, [productId], (err, results) => {
-    if (err) {
-      console.error('Error fetching product data:', err);
-      res.status(500).send('Server error');
-      return;
-    }
-    if (results.length === 0) {
-      res.status(404).send('Product not found');
-      return;
-    }
-    res.json(results[0]);
+      const user = results[0];
+      // Verificar qué datos se están enviando
+      console.log('User data:', user); // Agrega este log para verificar los datos
+      res.json({
+          name: user.name,
+          email: user.email,
+          address: user.address,
+          phone: user.phone,
+          user_type_id: user.user_type_id
+      });
   });
+});
+
+
+app.get('/account', (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'account.html'));
 });
 
 // Ruta para manejar la compra de un producto
@@ -184,15 +210,76 @@ app.post('/buy', (req, res) => {
   });
 });
 
-//Ruta para cerra session
+// Ruta para cerrar sesión
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
       return res.status(500).send('Error logging out');
     }
-    res.redirect('/login');
+    res.redirect('/');
   });
 });
+
+// Ruta para manejar la compra
+app.post('/api/complete-purchase', (req, res) => {
+  const { items, total, customerInfo } = req.body;
+
+  let userId;
+
+  // Verificar si el usuario está logueado
+  if (req.session && req.session.userId) {
+      // Usuario logueado, usar su ID
+      userId = req.session.userId;
+      console.log('Usuario logueado, ID:', userId);
+      insertOrder(userId);
+  } else {
+      // Usuario no logueado, insertar como nuevo cliente en la tabla customers
+      const insertCustomerQuery = 'INSERT INTO customers (name, email) VALUES (?, ?)';
+      db.query(insertCustomerQuery, [customerInfo.name, customerInfo.email], (err, customerResult) => {
+          if (err) {
+              console.error('Error insertando cliente:', err);
+              return res.status(500).json({ message: 'Error al procesar la compra: cliente' });
+          }
+
+          userId = customerResult.insertId;  // Usar este ID como user_id en la tabla orders
+          console.log('Nuevo cliente insertado, ID:', userId);
+          insertOrder(userId);
+      });
+  }
+
+  function insertOrder(userId) {
+      // Asegurarse de que userId es válido antes de proceder
+      if (!userId) {
+          console.error('userId inválido:', userId);
+          return res.status(500).json({ message: 'Error al procesar la compra: userId inválido' });
+      }
+
+      // Inserta la orden en la tabla orders usando el userId
+      const orderQuery = 'INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, ?)';
+      db.query(orderQuery, [userId, total, 'pending'], (err, orderResult) => {
+          if (err) {
+              console.error('Error insertando la orden:', err);
+              return res.status(500).json({ message: 'Error al procesar la compra: orden' });
+          }
+
+          const orderId = orderResult.insertId;
+
+          // Inserta cada artículo de la orden en la tabla order_items, incluyendo product_name
+          const orderItemsQuery = 'INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES ?';
+          const orderItemsData = items.map(item => [orderId, item.id, item.name, item.quantity, item.price]);
+
+          db.query(orderItemsQuery, [orderItemsData], (err, itemsResult) => {
+              if (err) {
+                  console.error('Error insertando artículos de la orden:', err);
+                  return res.status(500).json({ message: 'Error al procesar la compra: artículos' });
+              }
+
+              res.status(201).json({ message: 'Compra realizada con éxito', orderId: orderId });
+          });
+      });
+  }
+});
+
 
 
 // Ruta protegida del dashboard
@@ -201,37 +288,6 @@ app.get('/dashboard', (req, res) => {
     return res.redirect('/login');
   }
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
-// Ruta para obtener la información de la cuenta del usuario
-app.get('/account-info', (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).send('Unauthorized');
-  }
-
-  const query = 'SELECT name, email FROM users WHERE id = ?';
-  db.query(query, [req.session.userId], (err, results) => {
-    if (err) {
-      console.error('Error fetching account info:', err);
-      return res.status(500).send('Server error');
-    }
-    if (results.length === 0) {
-      return res.status(404).send('User not found');
-    }
-
-    const user = results[0];
-    res.json({
-      name: user.name,
-      email: user.email
-    });
-  });
-});
-
-app.get('/account', (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'account.html'));
 });
 
 // Configuración de almacenamiento para las imágenes
@@ -249,9 +305,13 @@ const upload = multer({ storage: storage });
 // Integrar multer en la ruta que crea un nuevo producto
 app.post('/api/products', upload.single('image'), productController.createProduct);
 
-
 // Rutas de productos externas
 app.use('/api', productRoutes);
+// Ruta para servir la página de registro
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos de Contacto</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Ruta a tu archivo CSS -->
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f3f5f7;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .form-container {
+            width: 48%;
+        }
+
+        .cart-container {
+            width: 48%;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .cart-container h3 {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .cart-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .cart-container li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .cart-container .total {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Datos de Contacto</h2>
+            <form id="contact-form">
+                <div class="form-group">
+                    <label for="contact-name">Nombre:</label>
+                    <input type="text" id="contact-name" name="name" placeholder="Ingresá tu nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Email:</label>
+                    <input type="email" id="contact-email" name="email" placeholder="Ingresá tu email" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-address">Dirección:</label>
+                    <input type="text" id="contact-address" name="address" placeholder="Ingresá tu dirección" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone">Teléfono:</label>
+                    <input type="text" id="contact-phone" name="phone" placeholder="Ingresá tu teléfono" required>
+                </div>
+                <button type="submit">Continuar con el pago</button>
+            </form>
+        </div>
+
+        <div class="cart-container">
+            <h3>Tu Carrito</h3>
+            <ul id="cart-items"></ul>
+            <div class="total">
+                Total: <span id="cart-total"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Recupera el carrito de localStorage
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
+            // Función para actualizar la interfaz de usuario del carrito
+            function updateCartUI() {
+                const cartItemsContainer = document.getElementById('cart-items');
+                const cartTotal = document.getElementById('cart-total');
+                cartItemsContainer.innerHTML = '';
+        
+                let total = 0;
+                cart.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    `;
+                    cartItemsContainer.appendChild(listItem);
+                    total += item.price * item.quantity;
+                });
+        
+                cartTotal.textContent = `$${total.toFixed(2)}`;
+            }
+        
+            // Llama a la función para actualizar la interfaz de usuario
+            updateCartUI();
+        
+            // Manejar la presentación del formulario
+            document.getElementById('contact-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+        
+                const formData = new FormData(this);
+                const formObject = Object.fromEntries(formData.entries());
+        
+                const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        
+                // Agrega el total del carrito al objeto formObject
+                formObject.total = totalAmount;
+                formObject.items = cart;
+        
+                fetch('/api/complete-purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customerInfo: formObject,
+                        total: totalAmount,
+                        items: cart
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Hubo un problema al procesar la solicitud');
+                    }
+                })
+                .then(data => {
+                    alert('Datos guardados con éxito');
+                    // No eliminamos el carrito aún
+                    window.location.href = '/checkout.html';  // Redirigir al proceso de pago
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al enviar los datos');
+                });
+            });
+        });
+        
+    </script>
+</body>
+
+</html>
