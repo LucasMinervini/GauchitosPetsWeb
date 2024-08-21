@@ -46,4 +46,7 @@ router.get('/categories/:category_id', productController.getCategory);
 // Ruta de las compras
 router.post('/orders', orderController.createOrder);
 
+// Ruta para crear la preferencia de pago
+router.post('/products/create_preference', productController.createPreference);
+
 module.exports = router;

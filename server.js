@@ -281,6 +281,21 @@ app.post('/api/complete-purchase', (req, res) => {
 });
 
 
+// Endpoint to handle feedback from Mercado Pago
+app.get('/feedback', function (req, res) {
+  const paymentInfo = {
+      payment_id: req.query.payment_id,
+      status: req.query.status,
+      merchant_order_id: req.query.merchant_order_id
+  };
+
+  // Here, you might want to handle the order processing, 
+  // like saving to the database or updating the order status.
+
+  res.json(paymentInfo);
+});
+
+
 
 // Ruta protegida del dashboard
 app.get('/dashboard', (req, res) => {

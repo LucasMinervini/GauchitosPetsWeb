@@ -4,6 +4,45 @@ const crypto = require('crypto');
 const z = require('zod');
 const { validateProd } = require('../schema/product.js'); 
 const { ValidatePartialProd } = require('../schema/product.js');
+const mercadopago = require('mercadopago'); // Asegúrate de requerir Mercado Pago
+
+
+// Configura el Access Token
+mercadopago.configure({
+  access_token: 'APP_USR-589186678721132-082016-cdc4325df4801f0f63adff9503c1dc6b-164054209'
+});
+
+const createPreference = (req, res) => {
+  console.log('Request Body:', JSON.stringify(req.body, null, 2));
+
+  const items = req.body.items;
+
+  // Verificar que cada item tenga un unit_price numérico
+  for (const item of items) {
+      if (typeof item.unit_price !== 'number' || isNaN(item.unit_price)) {
+          console.error(`Invalid unit_price for item: ${JSON.stringify(item)}`);
+          return res.status(400).json({ error: "Invalid unit_price: must be a valid number" });
+      }
+  }
+
+  // Crear la preferencia con los detalles correctos
+  mercadopago.preferences.create({
+      items: items,  // Aquí se envían los detalles de cada producto
+      back_urls: {
+          success: "http://localhost:8080/feedback",
+          failure: "http://localhost:8080/feedback",
+          pending: "http://localhost:8080/feedback"
+      },
+      auto_return: "approved",
+  })
+  .then(response => {
+      res.json({ id: response.body.id });
+  })
+  .catch(error => {
+      console.error("Error creating preference: ", error);
+      res.status(500).json({ error: "Failed to create payment preference" });
+  });
+};
 
 
 // Controlador para crear un producto
@@ -283,9 +322,10 @@ const deleteProductById = (req, res) => {
   });
 };
 
-// Plasmo las compras en la base de datos 
 const createOrder = async (req, res) => {
   const { userId, cartItems, totalAmount } = req.body;
+
+  console.log('Datos recibidos:', { userId, cartItems, totalAmount });
 
   try {
       // Crear la orden en la base de datos
@@ -297,6 +337,7 @@ const createOrder = async (req, res) => {
       const orderResult = await new Promise((resolve, reject) => {
           db.query(orderQuery, [userId, totalAmount, 'pending'], (err, result) => {
               if (err) {
+                  console.error('Error al crear la orden:', err);
                   return reject(err);
               }
               resolve(result);
@@ -315,6 +356,7 @@ const createOrder = async (req, res) => {
           return new Promise((resolve, reject) => {
               db.query(itemQuery, [orderId, item.productId, item.quantity, item.price], (err, result) => {
                   if (err) {
+                      console.error(`Error al insertar el producto ${item.productId} en la orden ${orderId}:`, err);
                       return reject(err);
                   }
                   resolve(result);
@@ -331,6 +373,7 @@ const createOrder = async (req, res) => {
   }
 };
 
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -340,5 +383,6 @@ module.exports = {
   getProductByName,
   getPriceProductById,
   getCategory,
-  createOrder
+  createOrder,
+  createPreference
 };

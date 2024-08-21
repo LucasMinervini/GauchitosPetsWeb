@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Ruta a tu archivo CSS -->
+    <link rel="stylesheet" href="styles.css"> 
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -127,80 +128,36 @@
             </div>
         </div>
 
-        <div id="credit-debit" class="payment-details">
-            <h3>Detalles de la tarjeta</h3>
-            <div class="form-group">
-                <label for="card-number">Número de tarjeta</label>
-                <input type="number" id="card-number" placeholder="1234 5678 9101 1121">
-            </div>
-            <div class="form-group">
-                <label for="card-name">Nombre en la tarjeta</label>
-                <input type="text" id="card-name" placeholder="Nombre Completo">
-            </div>
-            <div class="form-group">
-                <label for="expiry-date">Fecha de vencimiento</label>
-                <input type="text" id="expiry-date" placeholder="MM/AA">
-            </div>
-            <div class="form-group">
-                <label for="cvv">CVV</label>
-                <input type="number" id="cvv" placeholder="123">
-            </div>
+        <div id="mercado-pago" class="payment-details" style="display: none;">
+            <h3>Paga con Mercado Pago</h3>
+            <button id="checkout-button" class="btn btn-primary">Pagar a través de Mercado Pago</button>
         </div>
-
-        <div id="bank-transfer" class="payment-details">
-            <h3>Datos para transferencia bancaria</h3>
-            <div class="bank-details">
-                <p><strong>Banco:</strong> Banco Nombre</p>
-                <p><strong>CBU:</strong> 0123456789012345678901</p>
-                <p><strong>Alias:</strong> NOMBRE.ALIAS</p>
-                <p><strong>Titular:</strong> Nombre del Titular</p>
-            </div>
-        </div>
-
-        <div id="mercado-pago" class="payment-details">
-            <h3>Escanea el código QR para pagar</h3>
-            <div class="qr-code">
-                <img src="tu-codigo-qr.png" alt="Código QR Mercado Pago">
-                <p><strong>Alias:</strong> TuAlias.MercadoPago</p>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="customer-name">Nombre:</label>
-            <input type="text" id="customer-name" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="customer-email">Email:</label>
-            <input type="email" id="customer-email" class="form-control" required>
-        </div>
-        
 
         <div class="cart">
-          <h3>Tu Carrito</h3>
-          <ul id="cart-items" class="list-group"></ul>
-          <div class="d-flex justify-content-between mt-3">
-              <strong>Total:</strong>
-              <strong id="cart-total"></strong>
-          </div>
-      </div>
-      
-        <button id="complete-purchase" class="btn btn-primary" type="submit">Realizar compra</button>
+            <h3>Tu Carrito</h3>
+            <ul id="cart-items" class="list-group"></ul>
+            <div class="d-flex justify-content-between mt-3">
+                <strong>Total:</strong>
+                <strong id="cart-total"></strong>
+            </div>
+        </div>
 
         <a href="index.html"><button id="go-to-home" class="btn btn-secondary mt-3">Volver al Inicio</button></a>
-
     </div>
 
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Recupera el carrito de localStorage
+            const userId = window.userId || 'defaultUserId';
+    
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        
-            // Función para actualizar la interfaz de usuario del checkout
+            console.log('Carrito recuperado:', cart);
+    
             function updateCheckoutUI() {
                 const cartItemsContainer = document.getElementById('cart-items');
                 const cartTotal = document.getElementById('cart-total');
                 cartItemsContainer.innerHTML = '';
-        
+    
                 let total = 0;
                 cart.forEach(item => {
                     const listItem = document.createElement('li');
@@ -212,87 +169,100 @@
                     cartItemsContainer.appendChild(listItem);
                     total += item.price * item.quantity;
                 });
-        
+    
                 cartTotal.textContent = `$${total.toFixed(2)}`;
             }
-        
-            // Llama a la función para actualizar la interfaz de usuario
+    
             updateCheckoutUI();
-        
-            // Función para manejar la compra
-            function handlePurchase() {
-                if (cart.length === 0) {
-                    alert("Tu carrito está vacío.");
-                    return;
-                }
-        
-                // Reúne la información del cliente
-                const customerInfo = {
-                    name: document.getElementById('customer-name').value,
-                    email: document.getElementById('customer-email').value
-                };
-        
-                // Datos que enviarás al servidor
-                const purchaseData = {
-                    items: cart,
-                    total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-                    customerInfo: customerInfo
-                };
-        
-                // Enviar los datos al servidor para guardarlos en la base de datos
-                fetch('/api/complete-purchase', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(purchaseData)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Hubo un problema al procesar la compra');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    alert('Compra realizada con éxito');
-                    localStorage.removeItem('cart');
-                    window.location.href = '/thank-you.html';  // Redirigir a una página de agradecimiento
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al realizar la compra');
-                });
-            }
-        
-            // Agregar event listener al botón de compra
-            const purchaseButton = document.getElementById('complete-purchase');
-            if (purchaseButton) {
-                purchaseButton.addEventListener('click', handlePurchase);
-            }
-        
-            // Opciones de pago
-            const paymentOptions = document.querySelectorAll('.payment-option');
-            const paymentDetails = document.querySelectorAll('.payment-details');
-        
-            paymentOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    const method = option.getAttribute('data-method');
-        
-                    paymentDetails.forEach(detail => {
-                        if (detail.id === method) {
-                            detail.style.display = 'block';
-                        } else {
-                            detail.style.display = 'none';
-                        }
+    
+            const mercadopago = new MercadoPago('APP_USR-ad83ea94-ae17-4028-8bf3-6e7716ac726e', {
+                locale: 'es-AR'
+            });
+    
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const method = this.getAttribute('data-method');
+                    document.querySelectorAll('.payment-details').forEach(detail => {
+                        detail.style.display = 'none';
                     });
+    
+                    if (method === 'mercado-pago') {
+                        document.getElementById('mercado-pago').style.display = 'block';
+                    }
                 });
             });
+    
+            function createCheckoutButton() {
+                document.getElementById('checkout-button').addEventListener('click', function() {
+                    const orderData = {
+                        items: []
+                    };
+            
+                    // Verificar si hay elementos en el carrito antes de continuar
+                    if (cart.length === 0) {
+                        alert('Tu carrito está vacío. Agrega productos antes de proceder.');
+                        return;
+                    }
+            
+                    // Recorrer el carrito y llenar orderData
+                    cart.forEach(item => {
+                        const unitPrice = parseFloat(item.price);
+                        console.log(`Item: ${item.name}, Unit Price: ${unitPrice}, Quantity: ${item.quantity}`);
+            
+                        if (isNaN(unitPrice)) {
+                            console.error(`El precio del producto ${item.name} no es un número válido.`);
+                            return;
+                        }
+            
+                        orderData.items.push({
+                            title: item.name,  // Aquí aseguramos que 'title' se establece con el nombre del producto
+                            unit_price: unitPrice,
+                            quantity: Number(item.quantity)
+                        });
+                    });
+            
+                    console.log('Datos enviados al backend:', {
+                        userId: userId,
+                        items: orderData.items
+                    });
+            
+                    // Enviar solicitud para crear la preferencia de pago
+                    fetch('http://localhost:8080/api/products/create_preference', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId: userId,
+                            items: orderData.items
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(preference => {
+                        console.log('Preference created:', preference);
+                        mercadopago.checkout({
+                            preference: {
+                                id: preference.id
+                            },
+                            autoOpen: true
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error en la creación de la preferencia:', error);
+                        alert('Hubo un problema al procesar el pago. Inténtalo de nuevo.');
+                    });
+                });
+            }
+            
+            createCheckoutButton();
         });
-        
-        
-      
-      
     </script>
+            
 </body>
 
 </html>
