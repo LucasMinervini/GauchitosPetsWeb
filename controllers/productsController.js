@@ -13,7 +13,7 @@ mercadopago.configure({
 });
 
 const createPreference = (req, res) => {
-  console.log('Request Body:', JSON.stringify(req.body, null, 2));
+  
 
   const items = req.body.items;
 

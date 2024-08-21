@@ -106,6 +106,30 @@
             width: 150px;
             height: 150px;
         }
+        #checkout-button {
+            background-color: #009EE3; /* Fondo azul de Mercado Pago */
+            color: #FFFFFF; /* Texto en blanco */
+            border: none; /* Sin bordes */
+            padding: 10px 20px; /* Espaciado interno del botón */
+            font-size: 16px; /* Tamaño de la fuente */
+            font-weight: bold; /* Fuente en negrita */
+            cursor: pointer; /* Cambia el cursor a pointer cuando el mouse pasa sobre el botón */
+            display: flex; /* Usar flexbox para alinear el contenido */
+            align-items: center; /* Alinear verticalmente */
+            justify-content: center; /* Centrar horizontalmente */
+            border-radius: 4px; /* Bordes redondeados */
+            text-transform: uppercase; /* Texto en mayúsculas */
+        }
+        
+        #checkout-button img {
+            height: 24px; /* Ajusta la altura del logo */
+            margin-right: 10px; /* Espacio entre el logo y el texto */
+        }
+        
+        #checkout-button:hover {
+            background-color: #007EBB; /* Azul más oscuro en hover */
+        }
+        
     </style>
 </head>
 
@@ -130,7 +154,10 @@
 
         <div id="mercado-pago" class="payment-details" style="display: none;">
             <h3>Paga con Mercado Pago</h3>
-            <button id="checkout-button" class="btn btn-primary">Pagar a través de Mercado Pago</button>
+            <button id="checkout-button" class="btn btn-primary">
+                Pagar a través de Mercado Pago
+                <img src="images/mercado-pago.png" alt="Mercado Pago" style="height: 50px; margin-right: 10px;">
+            </button>
         </div>
 
         <div class="cart">
@@ -215,7 +242,7 @@
                         }
             
                         orderData.items.push({
-                            title: item.name,  // Aquí aseguramos que 'title' se establece con el nombre del producto
+                            title: item.name,
                             unit_price: unitPrice,
                             quantity: Number(item.quantity)
                         });

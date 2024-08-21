@@ -166,7 +166,11 @@
 
     <main class="container my-5">
         <h1 class="text-center mb-5">Accesorios para Gatos</h1>
-        <div id="dog-foods" class="row"></div>
+        <div class="swiper bestselling-swiper">
+          <div class="swiper-wrapper" id="bestselling-products">
+            <!-- Aquí se agregarán los productos dinámicamente -->
+          </div>
+        </div>
     </main>
 
     <footer id="footer" class="my-5">
@@ -268,43 +272,109 @@
   <script src="js/script.js"></script>
   <script src="js/iconify.js"></script>
   <script src="js/cart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('http://localhost:8080/api/categories/7')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('dog-foods');
-                    container.innerHTML = ''; // Clear any existing content
+  <script>
+    // Función para cargar productos y manejar acciones del carrito
+    function loadProducts(apiUrl, containerSelector, swiperSelector) {
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(products => {
+                const container = document.querySelector(containerSelector);
+                container.innerHTML = ''; // Limpiar el contenedor antes de agregar productos
 
-                    data.forEach(product => {
-                        const productHTML = `
-                            <div class="col-md-4">
-                                <div class="card mb-4">
-                                    <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${product.name}</h5>
-                                        <p class="card-text">$${parseFloat(product.retail_price).toFixed(2)}</p>
-                                        <button class="btn btn-primary btn-add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">Agregar al carrito</button>
+                products.forEach(product => {
+                    const productElement = `
+                        <div class="swiper-slide">
+                            <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                <a href="single-product.html"><img src="${product.image_url}" class="img-fluid rounded-4" alt="${product.name}"></a>
+                                <div class="card-body p-0">
+                                    <a href="single-product.html">
+                                        <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                                    </a>
+                                    <div class="card-text">
+                                        <span class="rating secondary-font">
+                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                            5.0
+                                        </span>
+                                        <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
+                                        <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                            Agregar al carrito
+                                        </button>
                                     </div>
                                 </div>
-                            </div>`;
-                        container.insertAdjacentHTML('beforeend', productHTML);
-                    });
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', productElement);
+                });
 
-                    // Add event listeners for the cart buttons if needed
-                    document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const productId = this.getAttribute('data-product-id');
-                            const productName = this.getAttribute('data-product-name');
-                            const productPrice = this.getAttribute('data-product-price');
+                // Inicializar Swiper
+                new Swiper(swiperSelector, {
+                    slidesPerView: 4,
+                    spaceBetween: 30,
+                    loop: true,
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev',
+                    },
+                });
 
-                            // Handle adding to cart here
-                            console.log(`Product added: ${productName} (ID: ${productId}) - $${productPrice}`);
-                        });
-                    });
-                })
-                .catch(error => console.error('Error fetching dog food data:', error));
-        });
-    </script>
+                // Añadir manejadores de eventos a los botones "Agregar al carrito"
+                document.querySelectorAll('.btn-add-to-cart').forEach(button => {
+                    button.addEventListener('click', addToCart);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching the products:', error);
+            });
+    }
+
+    // Función para agregar productos al carrito
+    function addToCart(event) {
+        const button = event.currentTarget;
+        const productId = button.getAttribute('data-product-id');
+        const productName = button.getAttribute('data-product-name');
+        const productPrice = button.getAttribute('data-product-price');
+
+        const cartItem = {
+            id: productId,
+            name: productName,
+            price: parseFloat(productPrice),
+            quantity: 1
+        };
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingItem = cart.find(item => item.id === productId);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push(cartItem);
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartBadge(cart);
+        alert(`${productName} ha sido agregado al carrito.`);
+    }
+
+    // Función para actualizar la insignia del carrito
+    function updateCartBadge(cart) {
+        const cartBadge = document.getElementById('cart-badge');
+        const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+        cartBadge.textContent = totalItems;
+    }
+
+    // Cargar productos en los sliders
+    loadProducts('http://localhost:8080/api/categories/7', '#bestselling-products', '.bestselling-swiper');
+
+    // Inicializar la insignia del carrito al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        updateCartBadge(cart);
+    });
+</script>
 </body>
 </html>
