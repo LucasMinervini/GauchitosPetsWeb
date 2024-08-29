@@ -47,8 +47,8 @@ const createPreference = (req, res) => {
 
 // Controlador para crear un producto
 const createProduct = (req, res) => {
-  console.log(req.body);   // Verifica los campos del formulario
-  console.log(req.files);  // Verifica que los archivos se están recibiendo
+  console.log(req.body);
+  console.log(req.files);
 
   const result = validateProd(req.body);
 
@@ -56,20 +56,26 @@ const createProduct = (req, res) => {
       return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
 
-  const { name, sku, description, retail_price, cost, stock_quantity, provider_id, category_id, category } = result.data;
+  const { name, sku, description, retail_price, cost, stock_quantity, provider_id } = result.data;
+
+  // Asegúrate de que category_ids sea un array de enteros
+  let categoryIds = req.body.category_id;
+  if (typeof categoryIds === 'string') {
+      categoryIds = JSON.parse(categoryIds);
+  }
+  if (!Array.isArray(categoryIds)) {
+      categoryIds = [categoryIds];
+  }
+  categoryIds = categoryIds.map(id => parseInt(id, 10));
 
   let imageUrls = [];
   if (Array.isArray(req.files) && req.files.length > 0) {
       imageUrls = req.files.map(file => `/images/${file.filename}`);
   } else if (req.files && req.files.filename) {
-      imageUrls = [`/images/${req.files.filename}`]; // Si solo se subió un archivo, req.files podría no ser un array
+      imageUrls = [`/images/${req.files.filename}`];
   }
 
-  console.log("Generated imageUrls: ", imageUrls); 
-
-  // Asignar la primera imagen como la imagen principal
-  const mainImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;
-  console.log("Main image URL: ", mainImageUrl); // Verificar la URL de la imagen principal
+  const concatenatedImageUrls = imageUrls.join(',');
 
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
   db.query(providerQuery, [provider_id], (err, providerResults) => {
@@ -78,48 +84,60 @@ const createProduct = (req, res) => {
       }
 
       const newId = crypto.randomUUID();
-
-      // Insertar el producto en la tabla `products`
       const insertProductQuery = `
-          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id, category, image_url) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id, image_url) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      const productValues = [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id, category, mainImageUrl];
-
-      db.query(insertProductQuery, productValues, (err, results) => {
+      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id, concatenatedImageUrls], (err, results) => {
           if (err) {
-              console.error('Error executing product query:', err);
-              return res.status(500).send('Error executing product query');
+              console.error('Error executing query:', err);
+              return res.status(500).send('Error executing query');
           }
 
-          // Insertar las categorías relacionadas en la tabla `product_categories`
+          // Insertar en la tabla product_categories
           const insertCategoryQuery = `
               INSERT INTO product_categories (product_id, category_id) 
-              VALUES ?
+              VALUES (?, ?)
           `;
 
-          // Preparar los valores para la inserción en `product_categories`
-          const categoryValues = category_id.map(catId => [newId, catId]);
+          let categoryErrors = false;
+          let processedCategories = 0;
 
-          db.query(insertCategoryQuery, [categoryValues], (err, results) => {
-              if (err) {
-                  console.error('Error inserting categories:', err);
-                  return res.status(500).send('Error inserting categories');
-              }
+          categoryIds.forEach((categoryId) => {
+              db.query(insertCategoryQuery, [newId, categoryId], (err, results) => {
+                  processedCategories++;
 
-              console.log("Product and categories created successfully with ID: ", newId);
-              res.status(201).send({ id: newId, ...result.data, image_urls: imageUrls });
+                  if (err) {
+                      console.error('Error inserting category:', err);
+                      categoryErrors = true;
+                  }
+
+                  if (processedCategories === categoryIds.length) {
+                      if (categoryErrors) {
+                          return res.status(500).send('Error inserting one or more categories');
+                      }
+
+                      // Recuperar las categorías para devolverlas en la respuesta
+                      const selectCategoriesQuery = `
+                          SELECT category_id FROM product_categories WHERE product_id = ?
+                      `;
+                      db.query(selectCategoriesQuery, [newId], (err, categoryResults) => {
+                          if (err) {
+                              console.error('Error fetching categories:', err);
+                              return res.status(500).send('Error fetching categories');
+                          }
+
+                          const categories = categoryResults.map(row => row.category_id);
+                          console.log("Product created successfully with ID: ", newId);
+                          res.status(201).send({ id: newId, ...result.data, image_urls: imageUrls, category_ids: categories });
+                      });
+                  }
+              });
           });
       });
   });
 };
-
-
-
-
-
-
 
 // Obtener todos los productos
 const getAllProducts = (req, res) => {
@@ -249,8 +267,15 @@ const getProductById = (req, res) => {
       res.status(404).send('Producto no encontrado');
       return;
     }
-    console.log('Producto encontrado:', results[0]);
-    res.status(200).json(results[0]);
+    
+    // Parsear las URLs de las imágenes antes de devolver el producto
+    const product = results[0];
+    if (product.image_urls) {
+      product.image_urls = JSON.parse(product.image_urls);
+    }
+    
+    console.log('Producto encontrado:', product);
+    res.status(200).json(product);
   });
 };
 // Obtener detalles de producto

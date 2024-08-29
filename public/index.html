@@ -982,315 +982,320 @@
   <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Recupera el carrito de localStorage o inicializa uno nuevo si no existe
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      
-      const cartCountElement = document.getElementById('cart-count');
-      const cartItemsElement = document.getElementById('cart-items');
-      const cartTotalElement = document.getElementById('cart-total');
-      const cartBadgeElement = document.getElementById('cart-badge'); // Referencia al badge del carrito
-      const alertContainer = document.getElementById('alert-container');
-  
-      // Función para actualizar la interfaz de usuario del carrito
-      function updateCartUI() {
-          cartItemsElement.innerHTML = '';
-          let total = 0;
-          let itemCount = 0;
-  
-          cart.forEach((item, index) => {
-              itemCount += item.quantity;
-              const li = document.createElement('li');
-              li.className = 'list-group-item d-flex justify-content-between align-items-center';
-              li.innerHTML = `
-                  <div class="d-flex align-items-center">
-                      <button class="btn btn-sm btn-outline-secondary btn-decrease" data-index="${index}">-</button>
-                      <span class="mx-2">${item.name} x${item.quantity}</span>
-                      <button class="btn btn-sm btn-outline-secondary btn-increase" data-index="${index}">+</button>
-                  </div>
-                  <span>$${(item.price * item.quantity).toFixed(2)}</span>
-              `;
-              cartItemsElement.appendChild(li);
-              total += item.price * item.quantity;
-          });
-  
-          cartCountElement.textContent = itemCount;
-          cartTotalElement.textContent = `$${total.toFixed(2)}`;
-          cartBadgeElement.textContent = itemCount; // Actualiza el número en el badge del carrito
-          localStorage.setItem('cart', JSON.stringify(cart)); // Guarda el carrito actualizado en localStorage
-      }
-  
-      // Función para agregar productos al carrito
-      function addToCart(productId, productName, productPrice) {
-          const existingProduct = cart.find(item => item.id === productId);
-  
-          if (existingProduct) {
-              existingProduct.quantity += 1;
-          } else {
-              cart.push({ id: productId, name: productName, price: productPrice, quantity: 1 });
-          }
-  
-          updateCartUI();
-          showAlert(`${productName} se agregó exitosamente`);
-      }
-  
-      // Función para disminuir la cantidad de un producto en el carrito
-      function decreaseQuantity(index) {
-          if (cart[index].quantity > 1) {
-              cart[index].quantity -= 1;
-          } else {
-              cart.splice(index, 1); // Elimina el producto del carrito si la cantidad es 0
-          }
-          updateCartUI();
-      }
-  
-      // Función para aumentar la cantidad de un producto en el carrito
-      function increaseQuantity(index) {
-          cart[index].quantity += 1;
-          updateCartUI();
-      }
-  
-      // Función para mostrar alertas
-      function showAlert(message) {
-          const alert = document.createElement('div');
-          alert.className = 'alert alert-success alert-dismissible fade show';
-          alert.role = 'alert';
-          alert.innerHTML = `
-              ${message}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          `;
-          alertContainer.appendChild(alert);
-          setTimeout(() => {
-              alert.classList.remove('show');
-              alert.addEventListener('transitionend', () => alert.remove());
-          }, 3000);
-      }
-  
-      // Añadir event listener a los botones de "Agregar al carrito"
-      document.addEventListener('click', event => {
-          if (event.target.classList.contains('btn-cart') || event.target.classList.contains('btn-add-to-cart')) {
-              event.preventDefault();
-              const button = event.target;
-              const productId = button.getAttribute('data-product-id');
-              const productName = button.getAttribute('data-product-name');
-              const productPrice = parseFloat(button.getAttribute('data-product-price'));
-  
-              addToCart(productId, productName, productPrice);
-          }
-  
-          // Event listener para manejar el botón de disminuir la cantidad
-          if (event.target.classList.contains('btn-decrease')) {
-              const index = event.target.getAttribute('data-index');
-              decreaseQuantity(index);
-          }
-  
-          // Event listener para manejar el botón de aumentar la cantidad
-          if (event.target.classList.contains('btn-increase')) {
-              const index = event.target.getAttribute('data-index');
-              increaseQuantity(index);
-          }
-      });
-  
-      updateCartUI(); // Actualiza la interfaz de usuario al cargar la página
-  
-      // Swiper y otras funcionalidades
-      const swiper = new Swiper('.main-swiper', {
-          loop: true,
-          pagination: {
-              el: '.swiper-pagination',
-              clickable: true,
-          },
-          navigation: {
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev',
-          },
-      });
-  
-      // Función para cargar productos y manejar acciones del carrito
-      function loadProducts(apiUrl, containerSelector, swiperSelector) {
-          fetch(apiUrl)
-              .then(response => response.json())
-              .then(products => {
-                  const container = document.querySelector(containerSelector);
-                  container.innerHTML = ''; 
-  
-                  products.forEach(product => {
-                      const productElement = `
-                          <div class="swiper-slide">
-                              <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                  <a href="single-product.html"><img src="${product.image_url}" class="img-fluid rounded-4" alt="${product.name}"></a>
-                                  <div class="card-body p-0">
-                                      <a href="single-product.html">
-                                          <h3 class="card-title pt-4 m-0">${product.name}</h3>
-                                      </a>
-                                      <div class="card-text">
-                                          <span class="rating secondary-font">
-                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                              5.0
-                                          </span>
-                                          <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
-                                          <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                              Agregar al carrito
-                                          </button>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      `;
-                      container.insertAdjacentHTML('beforeend', productElement);
-                  });
-  
-                  new Swiper(swiperSelector, {
-                      slidesPerView: 4,
-                      spaceBetween: 30,
-                      loop: true,
-                      navigation: {
-                          nextEl: '.swiper-button-next',
-                          prevEl: '.swiper-button-prev',
-                      },
-                  });
-              })
-              .catch(error => {
-                  console.error('Error fetching the products:', error);
-              });
-      }
-  
-      // Cargar productos en los sliders
-      loadProducts('http://localhost:8080/api/categories/5', '#bestselling-products', '.bestselling-swiper');
-      loadProducts('http://localhost:8080/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
-      loadProducts('http://localhost:8080/api/categories/11', '#products-carousel', '#products-carousel');
-  
-      // Manejo de tarjetas de productos
-      const productCards = document.querySelectorAll('.product-card');
-  
-      productCards.forEach(card => {
-          card.addEventListener('click', () => {
-              const productId = card.getAttribute('data-id');
-              if (productId) {
-                  window.location.href = `single-product.html?id=${productId}`;
-              }
-          });
-      });
-  
-      // Manejo de la información de la cuenta
-      function updateAccountInfo(user) {
-          const userInfo = document.getElementById('user-info');
-          userInfo.innerHTML = `
-              <p>Bienvenido, ${user.name}</p>
-              <a href="/logout">Cerrar sesión</a>
-          `;
-      }
-  
-      fetch('/account-info')
-          .then(response => {
-              if (!response.ok) {
-                  const userInfo = document.getElementById('user-info');
-                  userInfo.innerHTML = ``;
-                  throw new Error('No Autenticado');
-              }
-              return response.json();
-          })
-          .then(user => {
-              if (user.name) {
-                  updateAccountInfo(user);
-              } else {
-                  console.error('Nombre no encontrado');
-              }
-          })
-          .catch(error => {
-              console.error('Error fetching account info:', error);
-          });
-  
-      // Manejo del formulario de registro y login automático
-      document.getElementById('register-form').addEventListener('submit', function(event) {
-          event.preventDefault();
-  
-          const formData = new FormData(this);
-          const formObject = Object.fromEntries(formData.entries());
-  
-          fetch('/register', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(formObject)
-          })
-          .then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  // Limpiar el formulario después del registro exitoso
-                  document.getElementById('register-form').reset();
-  
-                  // Intentar loguear al usuario automáticamente después del registro
-                  return fetch('/login', {
-                      method: 'POST',
-                      headers: {
-                          'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({ email: formObject.email, password: formObject.password })
-                  });
-              } else {
-                  throw new Error('Error durante el registro');
-              }
-          })
-          .then(response => response.json())
-          .then(loginData => {
-              if (loginData.success) {
-                  // Actualizar la interfaz de usuario para mostrar la bienvenida
-                  updateAccountInfo(loginData.user);
-                  window.location.href = loginData.redirectUrl || '/'; // Redirigir después de un login exitoso
-              } else {
-                  throw new Error('Error durante el login');
-              }
-          })
-          .catch(error => console.error('Error:', error));
-      });
-  
-      const banner2Swiper = new Swiper('.brand-swiper', {
-          loop: true,
-          autoplay: {
-              delay: 2500,
-              disableOnInteraction: false,
-          },
-          pagination: {
-              el: '.swiper-pagination',
-              clickable: true,
-          },
-          navigation: {
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev',
-          },
-      });
-  });
+        // Recupera el carrito de localStorage o inicializa uno nuevo si no existe
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-  document.getElementById('product-search').addEventListener('input', function() {
-    const query = this.value;
+        const cartCountElement = document.getElementById('cart-count');
+        const cartItemsElement = document.getElementById('cart-items');
+        const cartTotalElement = document.getElementById('cart-total');
+        const cartBadgeElement = document.getElementById('cart-badge'); // Referencia al badge del carrito
+        const alertContainer = document.getElementById('alert-container');
 
-    if (query.length >= 3) {  // Comienza a buscar después de 3 letras
-        fetch(`/api/products/search?name=${query}`)
-            .then(response => response.json())
-            .then(products => {
-                const suggestions = document.getElementById('suggestions');
-                suggestions.innerHTML = '';  // Limpia sugerencias previas
+        // Función para actualizar la interfaz de usuario del carrito
+        function updateCartUI() {
+            cartItemsElement.innerHTML = '';
+            let total = 0;
+            let itemCount = 0;
 
-                products.forEach(product => {
-                    const suggestionItem = document.createElement('a');
-                    suggestionItem.href = `/single-product.html?id=${product.id}`;
-                    suggestionItem.className = 'list-group-item list-group-item-action';
-                    suggestionItem.textContent = product.name;
-                    suggestions.appendChild(suggestionItem);
+            cart.forEach((item, index) => {
+                itemCount += item.quantity;
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary btn-decrease" data-index="${index}">-</button>
+                        <span class="mx-2">${item.name} x${item.quantity}</span>
+                        <button class="btn btn-sm btn-outline-secondary btn-increase" data-index="${index}">+</button>
+                    </div>
+                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                `;
+                cartItemsElement.appendChild(li);
+                total += item.price * item.quantity;
+            });
+
+            cartCountElement.textContent = itemCount;
+            cartTotalElement.textContent = `$${total.toFixed(2)}`;
+            cartBadgeElement.textContent = itemCount; // Actualiza el número en el badge del carrito
+            localStorage.setItem('cart', JSON.stringify(cart)); // Guarda el carrito actualizado en localStorage
+        }
+
+        // Función para agregar productos al carrito
+        function addToCart(productId, productName, productPrice) {
+            const existingProduct = cart.find(item => item.id === productId);
+
+            if (existingProduct) {
+                existingProduct.quantity += 1;
+            } else {
+                cart.push({ id: productId, name: productName, price: productPrice, quantity: 1 });
+            }
+
+            updateCartUI();
+            showAlert(`${productName} se agregó exitosamente`);
+        }
+
+        // Función para disminuir la cantidad de un producto en el carrito
+        function decreaseQuantity(index) {
+            if (cart[index].quantity > 1) {
+                cart[index].quantity -= 1;
+            } else {
+                cart.splice(index, 1); // Elimina el producto del carrito si la cantidad es 0
+            }
+            updateCartUI();
+        }
+
+        // Función para aumentar la cantidad de un producto en el carrito
+        function increaseQuantity(index) {
+            cart[index].quantity += 1;
+            updateCartUI();
+        }
+
+        // Función para mostrar alertas
+        function showAlert(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.role = 'alert';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+            setTimeout(() => {
+                alert.classList.remove('show');
+                alert.addEventListener('transitionend', () => alert.remove());
+            }, 3000);
+        }
+
+        // Añadir event listener a los botones de "Agregar al carrito"
+        document.addEventListener('click', event => {
+            if (event.target.classList.contains('btn-cart') || event.target.classList.contains('btn-add-to-cart')) {
+                event.preventDefault();
+                const button = event.target;
+                const productId = button.getAttribute('data-product-id');
+                const productName = button.getAttribute('data-product-name');
+                const productPrice = parseFloat(button.getAttribute('data-product-price'));
+
+                addToCart(productId, productName, productPrice);
+            }
+
+            // Event listener para manejar el botón de disminuir la cantidad
+            if (event.target.classList.contains('btn-decrease')) {
+                const index = event.target.getAttribute('data-index');
+                decreaseQuantity(index);
+            }
+
+            // Event listener para manejar el botón de aumentar la cantidad
+            if (event.target.classList.contains('btn-increase')) {
+                const index = event.target.getAttribute('data-index');
+                increaseQuantity(index);
+            }
+        });
+
+        updateCartUI(); // Actualiza la interfaz de usuario al cargar la página
+
+        // Swiper y otras funcionalidades
+        const swiper = new Swiper('.main-swiper', {
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        // Función para cargar productos y manejar acciones del carrito
+        function loadProducts(apiUrl, containerSelector, swiperSelector) {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(products => {
+                    const container = document.querySelector(containerSelector);
+                    container.innerHTML = ''; 
+
+                    products.forEach(product => {
+                        // Handle multiple images and choose the first one as the main image
+                        const imageUrls = product.image_url.split(',');
+                        const mainImageUrl = imageUrls.length > 0 ? imageUrls[0].trim() : 'default-image.png'; // Use the first image or a default one
+
+                        const productElement = `
+                            <div class="swiper-slide">
+                                <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                    <a href="single-product.html?id=${product.id}"><img src="${mainImageUrl}" class="img-fluid rounded-4" alt="${product.name}"></a>
+                                    <div class="card-body p-0">
+                                        <a href="single-product.html?id=${product.id}">
+                                            <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                                        </a>
+                                        <div class="card-text">
+                                            <span class="rating secondary-font">
+                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                                5.0
+                                            </span>
+                                            <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
+                                            <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                                Agregar al carrito
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', productElement);
+                    });
+
+                    new Swiper(swiperSelector, {
+                        slidesPerView: 4,
+                        spaceBetween: 30,
+                        loop: true,
+                        navigation: {
+                            nextEl: '.swiper-button-next',
+                            prevEl: '.swiper-button-prev',
+                        },
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching the products:', error);
                 });
-            })
-            .catch(error => console.error('Error fetching product suggestions:', error));
-    } else {
-        document.getElementById('suggestions').innerHTML = '';  // Limpia si no hay suficiente texto
-    }
-});
+        }
 
-  </script>
+        // Cargar productos en los sliders
+        loadProducts('http://localhost:8080/api/categories/5', '#bestselling-products', '.bestselling-swiper');
+        loadProducts('http://localhost:8080/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
+        loadProducts('http://localhost:8080/api/categories/11', '#products-carousel', '#products-carousel');
+
+        // Manejo de tarjetas de productos
+        const productCards = document.querySelectorAll('.product-card');
+
+        productCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const productId = card.getAttribute('data-id');
+                if (productId) {
+                    window.location.href = `single-product.html?id=${productId}`;
+                }
+            });
+        });
+
+        // Manejo de la información de la cuenta
+        function updateAccountInfo(user) {
+            const userInfo = document.getElementById('user-info');
+            userInfo.innerHTML = `
+                <p>Bienvenido, ${user.name}</p>
+                <a href="/logout">Cerrar sesión</a>
+            `;
+        }
+
+        fetch('/account-info')
+            .then(response => {
+                if (!response.ok) {
+                    const userInfo = document.getElementById('user-info');
+                    userInfo.innerHTML = ``;
+                    throw new Error('No Autenticado');
+                }
+                return response.json();
+            })
+            .then(user => {
+                if (user.name) {
+                    updateAccountInfo(user);
+                } else {
+                    console.error('Nombre no encontrado');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching account info:', error);
+            });
+
+        // Manejo del formulario de registro y login automático
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const formObject = Object.fromEntries(formData.entries());
+
+            fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formObject)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Limpiar el formulario después del registro exitoso
+                    document.getElementById('register-form').reset();
+
+                    // Intentar loguear al usuario automáticamente después del registro
+                    return fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: formObject.email, password: formObject.password })
+                    });
+                } else {
+                    throw new Error('Error durante el registro');
+                }
+            })
+            .then(response => response.json())
+            .then(loginData => {
+                if (loginData.success) {
+                    // Actualizar la interfaz de usuario para mostrar la bienvenida
+                    updateAccountInfo(loginData.user);
+                    window.location.href = loginData.redirectUrl || '/'; // Redirigir después de un login exitoso
+                } else {
+                    throw new Error('Error durante el login');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        const banner2Swiper = new Swiper('.brand-swiper', {
+            loop: true,
+            autoplay: {
+                delay: 2500,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+    });
+
+    document.getElementById('product-search').addEventListener('input', function() {
+        const query = this.value;
+
+        if (query.length >= 3) {  // Comienza a buscar después de 3 letras
+            fetch(`/api/products/search?name=${query}`)
+                .then(response => response.json())
+                .then(products => {
+                    const suggestions = document.getElementById('suggestions');
+                    suggestions.innerHTML = '';  // Limpia sugerencias previas
+
+                    products.forEach(product => {
+                        const suggestionItem = document.createElement('a');
+                        suggestionItem.href = `/single-product.html?id=${product.id}`;
+                        suggestionItem.className = 'list-group-item list-group-item-action';
+                        suggestionItem.textContent = product.name;
+                        suggestions.appendChild(suggestionItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching product suggestions:', error));
+        } else {
+            document.getElementById('suggestions').innerHTML = '';  // Limpia si no hay suficiente texto
+        }
+    });
+
+</script>
+
 </body>
 
 </html>

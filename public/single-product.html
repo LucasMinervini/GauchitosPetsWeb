@@ -424,96 +424,95 @@
 });
 
 function loadSingleProduct(apiUrl) {
-  fetch(apiUrl)
-      .then(response => {
-          console.log('Response completa:', response);  // Añadir log para ver la respuesta completa
-          if (!response.ok) {
-              throw new Error('Error al obtener el producto');
-          }
-          return response.json();
-      })
-      .then(product => {
-          console.log('Producto recibido:', product); // Ver los datos recibidos
-          
-          if (!product || !product.name) {
-              document.getElementById('product-name').textContent = 'Producto no encontrado';
-              document.getElementById('product-price').textContent = 'Precio no disponible';
-              document.getElementById('product-description').textContent = 'Descripción no disponible';
-              return;
-          }
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener el producto');
+            }
+            return response.json();
+        })
+        .then(product => {
+            if (!product || !product.name) {
+                document.getElementById('product-name').textContent = 'Producto no encontrado';
+                document.getElementById('product-price').textContent = 'Precio no disponible';
+                document.getElementById('product-description').textContent = 'Descripción no disponible';
+                return;
+            }
 
-          // Asignar los datos del producto a los elementos HTML correspondientes
-          document.getElementById('product-name').textContent = product.name;
-          document.getElementById('product-price').textContent = product.retail_price  ? `$${parseFloat(product.retail_price).toFixed(2)}` : 'Precio no disponible';
-          document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
+            // Asignar los datos del producto a los elementos HTML correspondientes
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('product-price').textContent = product.retail_price ? `$${parseFloat(product.retail_price).toFixed(2)}` : 'Precio no disponible';
+            document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
 
-          // Mostrar la imagen principal (la primera en el array)
-          if (product.image_urls && product.image_urls.length > 0) {
-              document.getElementById('product-image').src = product.image_urls[0];
-          } else {
-              document.getElementById('product-image').src = 'default-image.png';
-          }
+            // Mostrar la imagen principal (la primera en el array)
+            const imageUrls = product.image_url.split(',');
+            if (imageUrls && imageUrls.length > 0) {
+                document.getElementById('product-image').src = imageUrls[0];
+            } else {
+                document.getElementById('product-image').src = 'default-image.png';
+            }
 
-          // Mostrar todas las imágenes en la galería
-          const gallery = document.getElementById('product-gallery');
-          product.image_urls.forEach(url => {
-              const imgElement = document.createElement('img');
-              imgElement.src = url;
-              imgElement.alt = product.name;
-              gallery.appendChild(imgElement);
-          });
+            // Mostrar todas las imágenes en la galería
+            const gallery = document.getElementById('product-gallery');
+            gallery.innerHTML = ''; // Limpiar la galería antes de agregar nuevas imágenes
+            imageUrls.forEach(url => {
+                const imgElement = document.createElement('img');
+                imgElement.src = url.trim(); // Elimina espacios en blanco
+                imgElement.alt = product.name;
+                gallery.appendChild(imgElement);
+            });
 
-          // Agregar el botón "Agregar al carrito"
-          const addToCartButton = `
-              <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                  Agregar al carrito
-              </button>
-          `;
-          document.getElementById('product-actions').innerHTML = addToCartButton;
+            // Agregar el botón "Agregar al carrito"
+            const addToCartButton = `
+                <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                    Agregar al carrito
+                </button>
+            `;
+            document.getElementById('product-actions').innerHTML = addToCartButton;
 
-          // Event listener para agregar al carrito
-          document.querySelector('.btn-add-to-cart').addEventListener('click', function() {
-              addToCart(product.id, product.name, product.retail_price);
-          });
-      })
-      .catch(error => {
-          console.error('Error al obtener el producto:', error);
-          document.getElementById('product-name').textContent = 'Error al cargar el producto';
-      });
+           
+            document.querySelector('.btn-add-to-cart').addEventListener('click', function() {
+                addToCart(product.id, product.name, product.retail_price);
+            });
+        })
+        .catch(error => {
+            console.error('Error al obtener el producto:', error);
+            document.getElementById('product-name').textContent = 'Error al cargar el producto';
+        });
 }
+
 
 function loadFichaTecnica(apiUrl) {
-  fetch(apiUrl)
-      .then(response => {
-          if (!response.ok) {
-              throw new Error('Error al obtener la ficha técnica');
-          }
-          return response.json();
-      })
-      .then(details => {
-          if (!details) {
-              document.getElementById('product-age').textContent = 'No disponible';
-              document.getElementById('product-brand').textContent = 'No disponible';
-              document.getElementById('pet-size').textContent = 'No disponible';
-              document.getElementById('medicated-food').textContent = 'No disponible';
-              document.getElementById('product-presentation').textContent = 'No disponible';
-              document.getElementById('product-flavor').textContent = 'No disponible';
-              return;
-          }
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener la ficha técnica');
+            }
+            return response.json();
+        })
+        .then(details => {
+            if (!details) {
+                document.getElementById('product-age').textContent = 'No disponible';
+                document.getElementById('product-brand').textContent = 'No disponible';
+                document.getElementById('pet-size').textContent = 'No disponible';
+                document.getElementById('medicated-food').textContent = 'No disponible';
+                document.getElementById('product-presentation').textContent = 'No disponible';
+                document.getElementById('product-flavor').textContent = 'No disponible';
+                return;
+            }
 
-          // Asignar los detalles técnicos a los elementos HTML correspondientes
-          document.getElementById('product-age').textContent = details.age || 'No disponible';
-          document.getElementById('product-brand').textContent = details.brand || 'No disponible';
-          document.getElementById('pet-size').textContent = details.pet_size || 'No disponible';
-          document.getElementById('medicated-food').textContent = details.medicated_food ? 'Sí' : 'No';
-          document.getElementById('product-presentation').textContent = details.presentation || 'No disponible';
-          document.getElementById('product-flavor').textContent = details.flavor || 'No disponible';
-      })
-      .catch(error => {
-          console.error('Error al obtener la ficha técnica:', error);
-      });
+            // Asignar los detalles técnicos a los elementos HTML correspondientes
+            document.getElementById('product-age').textContent = details.age || 'No disponible';
+            document.getElementById('product-brand').textContent = details.brand || 'No disponible';
+            document.getElementById('pet-size').textContent = details.pet_size || 'No disponible';
+            document.getElementById('medicated-food').textContent = details.medicated_food ? 'Sí' : 'No';
+            document.getElementById('product-presentation').textContent = details.presentation || 'No disponible';
+            document.getElementById('product-flavor').textContent = details.flavor || 'No disponible';
+        })
+        .catch(error => {
+            console.error('Error al obtener la ficha técnica:', error);
+        });
 }
-
 </script>
 
 </body>
