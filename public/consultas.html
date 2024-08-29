@@ -34,7 +34,7 @@
 
     <section>
         <h2>Crear nuevo producto</h2>
-        <form id="createProductForm" enctype="multipart/form-data">
+        <form id="createProductForm" method="POST" action="/api/products" enctype="multipart/form-data">
             <input type="text" id="name" name="name" placeholder="Nombre" required>
             <input type="text" id="sku" name="sku" placeholder="SKU" required>
             <input type="text" id="description" name="description" placeholder="Descripción" required>
@@ -42,11 +42,14 @@
             <input type="number" id="cost" name="cost" placeholder="Costo" required>
             <input type="number" id="stock_quantity" name="stock_quantity" placeholder="Cantidad en stock" required>
             <input type="text" id="category_id" name="category_id" placeholder="IDs de categorías (separados por comas)" required>
+            <input type="text" id="category" name="category" placeholder="Categoría del producto (ej. alimentos, ropa, accesorios)" required>
             <input type="number" id="provider_id" name="provider_id" placeholder="ID de proveedor" required>
-            <input type="file" id="image" name="image" accept="image/*" required>
+            <input type="file" id="images" name="images" accept="image/*" multiple required>
             <button type="submit">Crear Producto</button>
         </form>
     </section>
+    
+    
 
     <section>
         <h2>Borrar producto por ID</h2>
@@ -159,43 +162,41 @@
     }
 
     // Crear Producto Nuevo
-    document.getElementById('createProductForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-    
-        const form = document.getElementById('createProductForm');
-        const formData = new FormData(form);
-        
-        // Convertir category_id a un array de números
-        const categoryIdsInput = formData.get('category_id');
-        const categoryIds = categoryIdsInput.split(',').map(id => parseInt(id.trim(), 10));
-        formData.set('category_id', JSON.stringify(categoryIds));  // Asegúrate de enviar como JSON
-    
-        // Enviar los datos al servidor con fetch
-        fetch('http://localhost:8080/api/products', {
-            method: 'POST',
-            body: formData
-        })
-        .then(async response => {
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Producto creado:', data);
-            alert('Producto creado exitosamente');
-        })
-        .catch(error => {
-            console.error('Error al crear el producto:', error.message);
-            alert('Error al crear el producto: ' + error.message);
-        });
-    });
-    
-    
-    
-    
+    // Crear Producto Nuevo
+document.getElementById('createProductForm').addEventListener('submit', function(event) {
+    event.preventDefault();
 
+    const form = document.getElementById('createProductForm');
+    const formData = new FormData(form);
+
+    // Convertir category_id a un array de números
+    const categoryIdsInput = formData.get('category_id');
+    const categoryIds = categoryIdsInput.split(',').map(id => parseInt(id.trim(), 10));
+    formData.set('category_id', JSON.stringify(categoryIds));  // Asegúrate de enviar como JSON
+
+    // Enviar los datos al servidor con fetch
+    fetch('http://localhost:8080/api/products', {
+        method: 'POST',
+        body: formData
+    })
+    .then(async response => {
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Producto creado:', data);
+        alert('Producto creado exitosamente');
+    })
+    .catch(error => {
+        console.error('Error al crear el producto:', error.message);
+        alert('Error al crear el producto: ' + error.message);
+    });
+});
+
+    
     // Borrar producto por ID
     function deleteProductById() {
         const productId = document.getElementById('deleteProductId').value;

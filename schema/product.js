@@ -39,6 +39,12 @@ function validateProd(object) {
 
       console.log('Category IDs before validation:', parsedObject.category_id, 'Length:', parsedObject.category_id.length);
 
+      // Validar que el nombre solo contenga letras, números y espacios
+      const nameRegex = /^[a-zA-Z0-9\s]+$/;
+      if (!nameRegex.test(parsedObject.name)) {
+          throw new Error('El nombre solo puede contener letras, números y espacios');
+      }
+
       // Asegurarse de que category_id no esté vacío y es realmente un array
       if (!Array.isArray(parsedObject.category_id) || parsedObject.category_id.length === 0) {
           throw new Error('Debes asignar al menos una categoría');
@@ -56,9 +62,10 @@ function validateProd(object) {
   return productSchema.safeParse(parsedObject);
 }
 
-function ValidatePartialProd(object){
+function ValidatePartialProd(object) {
   return productSchema.partial().safeParse(object);
 }
+
 module.exports = {
   validateProd,
   ValidatePartialProd

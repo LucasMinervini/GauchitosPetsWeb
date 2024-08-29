@@ -11,7 +11,7 @@
   <meta name="author" content="">
   <meta name="keywords" content="">
   <meta name="description" content="">
-</head>
+
 
 
 <link rel="stylesheet" href="css/swiper.css" />
@@ -24,6 +24,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chilanka&family=Montserrat:wght@300;400;500&display=swap"
   rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
 </head>
 
@@ -155,15 +156,12 @@
             </div>
 
             <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
-                <div class="search-bar border rounded-2 px-3 border-dark-subtle">
-                    <form id="search-form" class="text-center d-flex align-items-center" action="" method="">
-                        <input type="text" class="form-control border-0 bg-transparent" placeholder="Podés Buscar más de 1.000 productos" />
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
-                        </svg>
-                    </form>
-                </div>
-            </div>
+              <div class="search-bar border rounded-2 px-3 border-dark-subtle position-relative">
+                  <input type="text" id="product-search" class="form-control border-0 bg-transparent" placeholder="Buscar productos..." autocomplete="off" />
+                  <div id="suggestions" class="list-group position-absolute w-100"></div>
+              </div>
+          </div>
+          
 
             <div class="col-sm-8 col-lg-4 d-flex justify-content-between gap-5 align-items-center mt-4 mt-sm-0">
               <!-- Liniers -->
@@ -354,38 +352,39 @@
     </div>
     <div class="row my-5">
       <div class="col text-center">
-        <a href="#" class="categories-item">
+        <a href="https://wa.me/541125257949?text=Hola!%20Quiero%20reservar%20un%20turno%20para%20veterinaria!" class="categories-item">
           <img src="images/veterinaria.jpg" alt="vetenerinaria" style="width: 200px; height: 200px;">
-          <h5>Veterinaria</h5>
+          <h5 class="mt-5 fs-2">Veterinaria</h5>
         </a>
       </div>
       <div class="col text-center">
-        <a href="#" class="categories-item">
-          <img src="images/peluqueriaCanina.png" alt="peluqueria canina" style="width: 200px; height: 200px;">
-          <h5>Peluqueria Canina</h5>
+        <a href="https://wa.me/541125257949?text=Hola!%20Quiero%20reservar%20un%20turno%20para%20peluqueria%20canina" class="categories-item">
+          <img src="images/peluqueriaCanina2.jpg" alt="peluqueria canina" style="width: 200px; height: 200px;">
+          <h5 class="mt-5 fs-2">Peluqueria Canina</h5>
         </a>
       </div>
       <div class="col text-center">
         <a href="#" class="categories-item">
           <img src="images/farmacia.jpg" alt="farmacia" style="width: 200px; height: 200px;">
-          <h5>Farmacia</h5>
+          <h5 class="mt-5 fs-2">Farmacia</h5>
         </a>
       </div>
       <div class="col text-center">
         <a href="#" class="categories-item">
           <img src="images/perrosAlimentos.jpg" alt="alimentos" style="width: 200px; height: 200px;">
-          <h5>Alimentos</h5>
+          <h5 class="mt-5 fs-2">Alimentos</h5>
         </a>
       </div>
       <div class="col text-center">
         <a href="#" class="categories-item">
           <img src="images/accesorios.jpg" alt="accesorios" style="width: 200px; height: 200px;">
-          <h5>Accesorios</h5>
+          <h5 class="mt-5 fs-2">Accesorios</h5>
         </a>
       </div>
     </div>
   </div>
 </section>
+
 
 
   <section id="clothing" class="my-5 overflow-hidden">
@@ -417,10 +416,7 @@
             <h2 class="display-3 fw-normal">Promos</h2>
             <div class="mb-4 mb-md-0">
                 <p class="m-0">
-                    <button class="filter-button me-4 active" data-filter="*">ALL</button>
-                    <button class="filter-button me-4" data-filter=".cat">CAT</button>
-                    <button class="filter-button me-4" data-filter=".dog">DOG</button>
-                    <button class="filter-button me-4" data-filter=".bird">BIRD</button>
+                    
                 </p>
             </div>
             <div>
@@ -435,7 +431,19 @@
 
         <div class="swiper foodies-swiper">
             <div class="swiper-wrapper">
-                <!-- Los productos se insertarán aquí dinámicamente -->
+                <!-- Ejemplo de productos -->
+                <div class="swiper-slide product cat">
+                    <img src="cat-food.jpg" alt="Cat Food">
+                    <p>Comida para Gato</p>
+                </div>
+                <div class="swiper-slide product dog">
+                    <img src="dog-food.jpg" alt="Dog Food">
+                    <p>Comida para Perro</p>
+                </div>
+                <div class="swiper-slide product bird">
+                    <img src="bird-food.jpg" alt="Bird Food">
+                    <p>Comida para Exóticos</p>
+                </div>
             </div>
         </div>
     </div>
@@ -444,129 +452,157 @@
 
 
 <section id="banner-2" class="my-3 py-5" style="background: #F9F3EC;">
-  <div class="container">
+  <div class="container position-relative"> <!-- 'position-relative' aplicado aquí -->
     <div class="row justify-content-center text-center">
-      <h2 class="col-12 mb-5 fw-bold fs-1">Trabajamos con las mejores marcas!</h2>
+      <h2 class="col-12 mb-5 fw-bold fs-1">¡Trabajamos con tus marcas favoritas!</h2>
     </div>
-    <div class="row text-center justify-content-around align-items-center">
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/excellent logo.webp" alt="Excellent Logo" class="img-fluid" width="200" height="200">
-      </div>
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/eukanubaLogo.webp" alt="Eukanuba Logo" class="img-fluid" width="200" height="200">
-      </div>
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/marca-balanced-x2-1.png" alt="Balanced Logo" class="img-fluid" width="200" height="200">
-      </div>
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/royal logo.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
+    <div class="swiper brand-swiper">
+      <div class="swiper-wrapper text-center">
+        <div class="swiper-slide">
+          <div class="row justify-content-center">
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/excellent logo.webp" alt="Excellent Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/eukanubaLogo.webp" alt="Eukanuba Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/marca-balanced-x2-1.png" alt="Balanced Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/royal logo.png" alt="Royal Logo" class="img-fluid brand-logo">
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="row justify-content-center">
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/logoKong.webp" alt="Kong Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/logoOldPrince.png" alt="Old Prince Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/logoFawna.png" alt="Fawna Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/logo nutrique.png" alt="Nutrique Logo" class="img-fluid brand-logo">
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="row justify-content-center">
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/logoVitalCanTeraphy.png" alt="Vital Can Teraphy Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/vitalCanComplete.png" alt="Vital Can Complete Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/purinaProPlan.png" alt="Purina Pro Plan Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/vitalcrops.png" alt="Vitalcrops Logo" class="img-fluid brand-logo">
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="row justify-content-center">
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/catchow logo.png" alt="Catchow Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/dog chow.png" alt="Dog Chow Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/cancat.jpg" alt="Cancat Logo" class="img-fluid brand-logo">
+            </div>
+            <div class="col-3 d-flex align-items-center justify-content-center">
+              <img src="images/purinaProPlan.png" alt="Purina Pro Plan Logo" class="img-fluid brand-logo">
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/logoKong.webp" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
+      <!-- Paginación generada automáticamente por Swiper -->
+      <div class="swiper-pagination"></div>
 
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/logoOldPrince.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/logoFawna.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/logo nutrique.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/logoVitalCanTeraphy.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/vitalCanComplete.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-      <div class="col-6 col-md-3 my-3">
-        <img src="images/purinaProPlan.png" alt="Royal Logo" class="img-fluid" width="200" height="200">
-      </div>
-
-
+     
     </div>
   </div>
 </section>
 
-  <section id="testimonial">
-    <div class="container my-5 py-5">
-      <div class="row">
-        <div class="offset-md-1 col-md-10">
-          <div class="swiper testimonial-swiper">
-            <div class="swiper-wrapper">
-
-              <div class="swiper-slide">
-                <div class="row ">
-                  <div class="col-2">
-                    <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
-                  </div>
-                  <div class="col-md-10 mt-md-5 p-5 pt-0 pt-md-5">
-                    <a href="https://maps.app.goo.gl/JPUgRfLCawRTeDud9"><p class="testimonial-content fs-2">Muy buena atención en lo comercial.en mí experiencia. Fui a comprar un médico, no lo tenían y al otro día lo consiguieron. Tomaron contacto y coordinamos todo perfecto.</p>
-                    <p class="text-black">- Gastón M</p></a>
-                  </div>
-                </div>
+<section id="testimonial" class="my-5 py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10 text-center">
+        <h2 class="testimonial-title">Algunos de nuestros comentarios</h2>
+        <div class="row mt-5">
+          <!-- Primera fila de comentarios -->
+          <div class="col-md-4 mb-4">
+            <a href="https://tu-url.com/comentario1" class="text-decoration-none">
+              <div class="testimonial-card shadow">
+                <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                <p class="testimonial-content fs-5 mt-3">Muy buena atención en lo comercial. En mi experiencia, fui a comprar un medicamento, no lo tenían y al otro día lo consiguieron. Tomaron contacto y coordinamos todo perfecto.</p>
+                <p class="text-black">- Gastón M</p>
               </div>
-              <div class="swiper-slide">
-                <div class="row ">
-                  <div class="col-2">
-                    <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
-                  </div>
-                  <div class="col-md-10 mt-md-5 p-5 pt-0 pt-md-5">
-                    <a href="https://maps.app.goo.gl/1F9EKvp3YivSdwgs5"><p class="testimonial-content fs-2">Son muy atentos todos y la veterinaria es un sol Tiene una paciencia con los de dos y cuatro patas que es para verlo!</p>
-                    <p class="text-black">- Maria Ramis</p></a>
-                  </div>
-                </div>
+            </a>
+          </div>
+          <div class="col-md-4 mb-4">
+            <a href="https://tu-url.com/comentario2" class="text-decoration-none">
+              <div class="testimonial-card shadow">
+                <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                <p class="testimonial-content fs-5 mt-3">Son muy atentos todos y la veterinaria es un sol. Tiene una paciencia con los de dos y cuatro patas que es para verlo!</p>
+                <p class="text-black">- Maria Ramis</p>
               </div>
-              <div class="swiper-slide">
-                <div class="row ">
-                  <div class="col-2">
-                    <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
-                  </div>
-                  <div class="col-md-10 mt-md-5 p-5 pt-0 pt-md-5">
-                    
-                    <a href="https://maps.app.goo.gl/DZ38S9uhsG7RDjT97"><p class="testimonial-content fs-2">Excelente atención y buenos precios!</p>
-                    <p class="text-black">- Ariel Dominguez</p></a>
-                  </div>
-                </div>
+            </a>
+          </div>
+          <div class="col-md-4 mb-4">
+            <a href="https://tu-url.com/comentario3" class="text-decoration-none">
+              <div class="testimonial-card shadow">
+                <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                <p class="testimonial-content fs-5 mt-3">Excelente atención y buenos precios!</p>
+                <p class="text-black">- Ariel Dominguez</p>
               </div>
+            </a>
+          </div>
 
-            </div>
-
-            <div class="swiper-pagination"></div>
-
+          <!-- Segunda fila de comentarios -->
+          <div class="col-md-4 mb-4">
+            <a href="https://tu-url.com/comentario4" class="text-decoration-none">
+              <div class="testimonial-card shadow">
+                <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                <p class="testimonial-content fs-5 mt-3">Muy recomendable. Siempre tienen lo que busco y me atienden de maravilla.</p>
+                <p class="text-black">- Lucas P</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4 mb-4">
+            <a href="https://tu-url.com/comentario5" class="text-decoration-none">
+              <div class="testimonial-card shadow">
+                <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                <p class="testimonial-content fs-5 mt-3">Buen lugar, variedad de productos y precios accesibles.</p>
+                <p class="text-black">- Fernanda G</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4 mb-4">
+            <a href="https://tu-url.com/comentario6" class="text-decoration-none">
+              <div class="testimonial-card shadow">
+                <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                <p class="testimonial-content fs-5 mt-3">La atención es excelente, y siempre dispuestos a ayudar. 100% recomendable.</p>
+                <p class="text-black">- Roberto Q</p>
+              </div>
+            </a>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</section>
 
-  </section>
+
+
 
   <section id="bestselling" class="my-5 overflow-hidden">
     <div class="container py-5 mb-5">
@@ -597,7 +633,7 @@
         <div class="row my-5 py-5">
             <div class="offset-md-3 col-md-6 my-5">
                 <h2 class="display-3 fw-normal text-center">Obten un 10% de descuento <span class="text-primary">en tu primera compra</span></h2>
-                <form action="/register" method="POST" id="register-form">
+                <form id="register-form" method="POST">
                     <div class="mb-3">
                         <input type="text" class="form-control form-control-lg" name="name" id="name" placeholder="Ingresá un nombre" required>
                     </div>
@@ -621,6 +657,8 @@
         </div>
     </div>
 </section>
+
+
 
 
 
@@ -710,7 +748,7 @@
             </div>
             <h3 class="card-title py-2 m-0">Delivery Gratis</h3>
             <div class="card-text">
-              <p class="blog-paragraph fs-6">LO PAGA TUTE</p>
+              <p class="blog-paragraph fs-6">Envíos sin cargo en zonas seleccionadas</p>
             </div>
           </div>
         </div>
@@ -721,7 +759,7 @@
             </div>
             <h3 class="card-title py-2 m-0">100% confianza</h3>
             <div class="card-text">
-              <p class="blog-paragraph fs-6">El Pet Store del barrio.</p>
+              <p class="blog-paragraph fs-6">Comprá con seguridad; Tus datos siempre estarán protegidos</p>
             </div>
           </div>
         </div>
@@ -758,7 +796,7 @@
         <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
             <img src="images/logoInstagram.png" alt="Instagram" width="100" height="100" class="img-fluid ">
         </a>
-        <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.tiktok.com/@gauchitos.pets" target="_blank" rel="noopener noreferrer">
             <img src="images/Twitter X Icon.png" alt="x" width="100" height="100" class="img-fluid mx-2">
         </a>
         <a href="https://www.instagram.com/losgauchitospets/" target="_blank" rel="noopener noreferrer">
@@ -782,7 +820,7 @@
             <div class="icon-overlay d-flex justify-content-center position-absolute" style="z-index: 10;">
                 <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
             </div>
-            <img src="images/sorteo.jpg" alt="sorteo" class="img-fluid rounded-3" style="z-index: 1; width: 300px; height: 300px;">
+            <img src="images/sorteo.jpg" alt="sorteo" class="img-fluid rounded-3" style="z-index: 1; width: 200px; height: 200px;">
         </a>
     </div>
     <div class="col instagram-item text-center position-relative">
@@ -790,7 +828,7 @@
           <div class="icon-overlay d-flex justify-content-center position-absolute" style="z-index: 10;">
               <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
           </div>
-          <img src="images/enviosDomicilio.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 300px; height: 300px;"> 
+          <img src="images/enviosDomicilio.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 200px; height: 200px;"> 
       </a>
   </div>
   <div class="col instagram-item text-center position-relative">
@@ -798,7 +836,7 @@
         <div class="icon-overlay d-flex justify-content-center position-absolute" style="z-index: 10;">
             <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
         </div>
-        <img src="images/veterinaria2.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 300px; height: 300px;"> 
+        <img src="images/veterinaria2.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 200px; height: 200px;"> 
     </a>
 </div>
 <div class="col instagram-item text-center position-relative">
@@ -806,7 +844,7 @@
       <div class="icon-overlay d-flex justify-content-center position-absolute" style="z-index: 10;">
           <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
       </div>
-      <img src="images/AccesoriosPost.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 300px; height: 300px;"> 
+      <img src="images/AccesoriosPost.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 200px; height: 200px;"> 
   </a>
 </div>
 <div class="col instagram-item text-center position-relative">
@@ -814,7 +852,7 @@
       <div class="icon-overlay d-flex justify-content-center position-absolute" style="z-index: 10;">
           <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
       </div>
-      <img src="images/veterinaria2.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 300px; height: 300px;"> 
+      <img src="images/veterinaria2.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 200px; height: 200px;"> 
   </a>
 </div>
 <div class="col instagram-item text-center position-relative">
@@ -822,7 +860,7 @@
       <div class="icon-overlay d-flex justify-content-center position-absolute" style="z-index: 10;">
           <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
       </div>
-      <img src="images/peluqueriaCanina2.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 300px; height: 300px;"> 
+      <img src="images/peluqueriaCanina2.jpg" alt="insta-img" class="img-fluid rounded-3" style="z-index: 1; width: 200px; height: 200px;"> 
   </a>
 </div>
   </section>
@@ -833,7 +871,9 @@
         <div class="col-md-3">
           <div class="footer-menu">
             <img src="images/logo.png" alt="logo" style="width:50%">
-            <p class="blog-paragraph fs-6 mt-3">De Lunes a Viernes 10hs-20:30hs.</p>
+            <p class="blog-paragraph fs-6 mt-3">De Lunes a Viernes 10hs-20:30hs.
+              Sábados de 10hs-16:30hs.
+            </p>
             <div class="social-links">
               <ul class="d-flex list-unstyled gap-2">
                 <li class="social">
@@ -928,6 +968,8 @@
       </div>
     </div>
   </div>
+  <a href="consultas.html">consultas</a>
+  <a href="sistemaGestion.html">Gestión</a>
 
   <script src="js/scripts.js"></script>
   <script src="js/jquery-1.11.0.min.js"></script>
@@ -937,250 +979,316 @@
   <script src="js/script.js"></script>
   <script src="js/iconify.js"></script>
   <script src="js/cart.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', () => {
-    // Recupera el carrito de localStorage o inicializa uno nuevo si no existe
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    
-    const cartCountElement = document.getElementById('cart-count');
-    const cartItemsElement = document.getElementById('cart-items');
-    const cartTotalElement = document.getElementById('cart-total');
-    const cartBadgeElement = document.getElementById('cart-badge'); // Referencia al badge del carrito
-    const alertContainer = document.getElementById('alert-container');
+  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Recupera el carrito de localStorage o inicializa uno nuevo si no existe
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      
+      const cartCountElement = document.getElementById('cart-count');
+      const cartItemsElement = document.getElementById('cart-items');
+      const cartTotalElement = document.getElementById('cart-total');
+      const cartBadgeElement = document.getElementById('cart-badge'); // Referencia al badge del carrito
+      const alertContainer = document.getElementById('alert-container');
+  
+      // Función para actualizar la interfaz de usuario del carrito
+      function updateCartUI() {
+          cartItemsElement.innerHTML = '';
+          let total = 0;
+          let itemCount = 0;
+  
+          cart.forEach((item, index) => {
+              itemCount += item.quantity;
+              const li = document.createElement('li');
+              li.className = 'list-group-item d-flex justify-content-between align-items-center';
+              li.innerHTML = `
+                  <div class="d-flex align-items-center">
+                      <button class="btn btn-sm btn-outline-secondary btn-decrease" data-index="${index}">-</button>
+                      <span class="mx-2">${item.name} x${item.quantity}</span>
+                      <button class="btn btn-sm btn-outline-secondary btn-increase" data-index="${index}">+</button>
+                  </div>
+                  <span>$${(item.price * item.quantity).toFixed(2)}</span>
+              `;
+              cartItemsElement.appendChild(li);
+              total += item.price * item.quantity;
+          });
+  
+          cartCountElement.textContent = itemCount;
+          cartTotalElement.textContent = `$${total.toFixed(2)}`;
+          cartBadgeElement.textContent = itemCount; // Actualiza el número en el badge del carrito
+          localStorage.setItem('cart', JSON.stringify(cart)); // Guarda el carrito actualizado en localStorage
+      }
+  
+      // Función para agregar productos al carrito
+      function addToCart(productId, productName, productPrice) {
+          const existingProduct = cart.find(item => item.id === productId);
+  
+          if (existingProduct) {
+              existingProduct.quantity += 1;
+          } else {
+              cart.push({ id: productId, name: productName, price: productPrice, quantity: 1 });
+          }
+  
+          updateCartUI();
+          showAlert(`${productName} se agregó exitosamente`);
+      }
+  
+      // Función para disminuir la cantidad de un producto en el carrito
+      function decreaseQuantity(index) {
+          if (cart[index].quantity > 1) {
+              cart[index].quantity -= 1;
+          } else {
+              cart.splice(index, 1); // Elimina el producto del carrito si la cantidad es 0
+          }
+          updateCartUI();
+      }
+  
+      // Función para aumentar la cantidad de un producto en el carrito
+      function increaseQuantity(index) {
+          cart[index].quantity += 1;
+          updateCartUI();
+      }
+  
+      // Función para mostrar alertas
+      function showAlert(message) {
+          const alert = document.createElement('div');
+          alert.className = 'alert alert-success alert-dismissible fade show';
+          alert.role = 'alert';
+          alert.innerHTML = `
+              ${message}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `;
+          alertContainer.appendChild(alert);
+          setTimeout(() => {
+              alert.classList.remove('show');
+              alert.addEventListener('transitionend', () => alert.remove());
+          }, 3000);
+      }
+  
+      // Añadir event listener a los botones de "Agregar al carrito"
+      document.addEventListener('click', event => {
+          if (event.target.classList.contains('btn-cart') || event.target.classList.contains('btn-add-to-cart')) {
+              event.preventDefault();
+              const button = event.target;
+              const productId = button.getAttribute('data-product-id');
+              const productName = button.getAttribute('data-product-name');
+              const productPrice = parseFloat(button.getAttribute('data-product-price'));
+  
+              addToCart(productId, productName, productPrice);
+          }
+  
+          // Event listener para manejar el botón de disminuir la cantidad
+          if (event.target.classList.contains('btn-decrease')) {
+              const index = event.target.getAttribute('data-index');
+              decreaseQuantity(index);
+          }
+  
+          // Event listener para manejar el botón de aumentar la cantidad
+          if (event.target.classList.contains('btn-increase')) {
+              const index = event.target.getAttribute('data-index');
+              increaseQuantity(index);
+          }
+      });
+  
+      updateCartUI(); // Actualiza la interfaz de usuario al cargar la página
+  
+      // Swiper y otras funcionalidades
+      const swiper = new Swiper('.main-swiper', {
+          loop: true,
+          pagination: {
+              el: '.swiper-pagination',
+              clickable: true,
+          },
+          navigation: {
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+          },
+      });
+  
+      // Función para cargar productos y manejar acciones del carrito
+      function loadProducts(apiUrl, containerSelector, swiperSelector) {
+          fetch(apiUrl)
+              .then(response => response.json())
+              .then(products => {
+                  const container = document.querySelector(containerSelector);
+                  container.innerHTML = ''; 
+  
+                  products.forEach(product => {
+                      const productElement = `
+                          <div class="swiper-slide">
+                              <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                  <a href="single-product.html"><img src="${product.image_url}" class="img-fluid rounded-4" alt="${product.name}"></a>
+                                  <div class="card-body p-0">
+                                      <a href="single-product.html">
+                                          <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                                      </a>
+                                      <div class="card-text">
+                                          <span class="rating secondary-font">
+                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                              <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                                              5.0
+                                          </span>
+                                          <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
+                                          <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                              Agregar al carrito
+                                          </button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      `;
+                      container.insertAdjacentHTML('beforeend', productElement);
+                  });
+  
+                  new Swiper(swiperSelector, {
+                      slidesPerView: 4,
+                      spaceBetween: 30,
+                      loop: true,
+                      navigation: {
+                          nextEl: '.swiper-button-next',
+                          prevEl: '.swiper-button-prev',
+                      },
+                  });
+              })
+              .catch(error => {
+                  console.error('Error fetching the products:', error);
+              });
+      }
+  
+      // Cargar productos en los sliders
+      loadProducts('http://localhost:8080/api/categories/5', '#bestselling-products', '.bestselling-swiper');
+      loadProducts('http://localhost:8080/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
+      loadProducts('http://localhost:8080/api/categories/11', '#products-carousel', '#products-carousel');
+  
+      // Manejo de tarjetas de productos
+      const productCards = document.querySelectorAll('.product-card');
+  
+      productCards.forEach(card => {
+          card.addEventListener('click', () => {
+              const productId = card.getAttribute('data-id');
+              if (productId) {
+                  window.location.href = `single-product.html?id=${productId}`;
+              }
+          });
+      });
+  
+      // Manejo de la información de la cuenta
+      function updateAccountInfo(user) {
+          const userInfo = document.getElementById('user-info');
+          userInfo.innerHTML = `
+              <p>Bienvenido, ${user.name}</p>
+              <a href="/logout">Cerrar sesión</a>
+          `;
+      }
+  
+      fetch('/account-info')
+          .then(response => {
+              if (!response.ok) {
+                  const userInfo = document.getElementById('user-info');
+                  userInfo.innerHTML = ``;
+                  throw new Error('No Autenticado');
+              }
+              return response.json();
+          })
+          .then(user => {
+              if (user.name) {
+                  updateAccountInfo(user);
+              } else {
+                  console.error('Nombre no encontrado');
+              }
+          })
+          .catch(error => {
+              console.error('Error fetching account info:', error);
+          });
+  
+      // Manejo del formulario de registro y login automático
+      document.getElementById('register-form').addEventListener('submit', function(event) {
+          event.preventDefault();
+  
+          const formData = new FormData(this);
+          const formObject = Object.fromEntries(formData.entries());
+  
+          fetch('/register', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(formObject)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  // Limpiar el formulario después del registro exitoso
+                  document.getElementById('register-form').reset();
+  
+                  // Intentar loguear al usuario automáticamente después del registro
+                  return fetch('/login', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ email: formObject.email, password: formObject.password })
+                  });
+              } else {
+                  throw new Error('Error durante el registro');
+              }
+          })
+          .then(response => response.json())
+          .then(loginData => {
+              if (loginData.success) {
+                  // Actualizar la interfaz de usuario para mostrar la bienvenida
+                  updateAccountInfo(loginData.user);
+                  window.location.href = loginData.redirectUrl || '/'; // Redirigir después de un login exitoso
+              } else {
+                  throw new Error('Error durante el login');
+              }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+  
+      const banner2Swiper = new Swiper('.brand-swiper', {
+          loop: true,
+          autoplay: {
+              delay: 2500,
+              disableOnInteraction: false,
+          },
+          pagination: {
+              el: '.swiper-pagination',
+              clickable: true,
+          },
+          navigation: {
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+          },
+      });
+  });
 
-    // Función para actualizar la interfaz de usuario del carrito
-    function updateCartUI() {
-        cartItemsElement.innerHTML = '';
-        let total = 0;
-        let itemCount = 0;
+  document.getElementById('product-search').addEventListener('input', function() {
+    const query = this.value;
 
-        cart.forEach((item, index) => {
-            itemCount += item.quantity;
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-sm btn-outline-secondary btn-decrease" data-index="${index}">-</button>
-                    <span class="mx-2">${item.name} x${item.quantity}</span>
-                    <button class="btn btn-sm btn-outline-secondary btn-increase" data-index="${index}">+</button>
-                </div>
-                <span>$${(item.price * item.quantity).toFixed(2)}</span>
-            `;
-            cartItemsElement.appendChild(li);
-            total += item.price * item.quantity;
-        });
-
-        cartCountElement.textContent = itemCount;
-        cartTotalElement.textContent = `$${total.toFixed(2)}`;
-        cartBadgeElement.textContent = itemCount; // Actualiza el número en el badge del carrito
-        localStorage.setItem('cart', JSON.stringify(cart)); // Guarda el carrito actualizado en localStorage
-    }
-
-    // Función para agregar productos al carrito
-    function addToCart(productId, productName, productPrice) {
-        const existingProduct = cart.find(item => item.id === productId);
-
-        if (existingProduct) {
-            existingProduct.quantity += 1;
-        } else {
-            cart.push({ id: productId, name: productName, price: productPrice, quantity: 1 });
-        }
-
-        updateCartUI();
-        showAlert(`${productName} se agregó exitosamente`);
-    }
-
-    // Función para disminuir la cantidad de un producto en el carrito
-    function decreaseQuantity(index) {
-        if (cart[index].quantity > 1) {
-            cart[index].quantity -= 1;
-        } else {
-            cart.splice(index, 1); // Elimina el producto del carrito si la cantidad es 0
-        }
-        updateCartUI();
-    }
-
-    // Función para aumentar la cantidad de un producto en el carrito
-    function increaseQuantity(index) {
-        cart[index].quantity += 1;
-        updateCartUI();
-    }
-
-    // Función para mostrar alertas
-    function showAlert(message) {
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-success alert-dismissible fade show';
-        alert.role = 'alert';
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        alertContainer.appendChild(alert);
-        setTimeout(() => {
-            alert.classList.remove('show');
-            alert.addEventListener('transitionend', () => alert.remove());
-        }, 3000);
-    }
-
-    // Añadir event listener a los botones de "Agregar al carrito"
-    document.addEventListener('click', event => {
-        if (event.target.classList.contains('btn-cart') || event.target.classList.contains('btn-add-to-cart')) {
-            event.preventDefault();
-            const button = event.target;
-            const productId = button.getAttribute('data-product-id');
-            const productName = button.getAttribute('data-product-name');
-            const productPrice = parseFloat(button.getAttribute('data-product-price'));
-
-            addToCart(productId, productName, productPrice);
-        }
-
-        // Event listener para manejar el botón de disminuir la cantidad
-        if (event.target.classList.contains('btn-decrease')) {
-            const index = event.target.getAttribute('data-index');
-            decreaseQuantity(index);
-        }
-
-        // Event listener para manejar el botón de aumentar la cantidad
-        if (event.target.classList.contains('btn-increase')) {
-            const index = event.target.getAttribute('data-index');
-            increaseQuantity(index);
-        }
-    });
-
-    updateCartUI(); // Actualiza la interfaz de usuario al cargar la página
-
-    // Swiper y otras funcionalidades
-    const swiper = new Swiper('.main-swiper', {
-        loop: true,
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-    });
-
-    // Función para cargar productos y manejar acciones del carrito
-    function loadProducts(apiUrl, containerSelector, swiperSelector) {
-        fetch(apiUrl)
+    if (query.length >= 3) {  // Comienza a buscar después de 3 letras
+        fetch(`/api/products/search?name=${query}`)
             .then(response => response.json())
             .then(products => {
-                const container = document.querySelector(containerSelector);
-                container.innerHTML = ''; 
+                const suggestions = document.getElementById('suggestions');
+                suggestions.innerHTML = '';  // Limpia sugerencias previas
 
                 products.forEach(product => {
-                    const productElement = `
-                        <div class="swiper-slide">
-                            <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                <a href="single-product.html"><img src="${product.image_url}" class="img-fluid rounded-4" alt="${product.name}"></a>
-                                <div class="card-body p-0">
-                                    <a href="single-product.html">
-                                        <h3 class="card-title pt-4 m-0">${product.name}</h3>
-                                    </a>
-                                    <div class="card-text">
-                                        <span class="rating secondary-font">
-                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                            <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                            5.0
-                                        </span>
-                                        <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
-                                        <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                            Agregar al carrito
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', productElement);
-                });
-
-                new Swiper(swiperSelector, {
-                    slidesPerView: 4,
-                    spaceBetween: 30,
-                    loop: true,
-                    navigation: {
-                        nextEl: '.swiper-button-next',
-                        prevEl: '.swiper-button-prev',
-                    },
+                    const suggestionItem = document.createElement('a');
+                    suggestionItem.href = `/single-product.html?id=${product.id}`;
+                    suggestionItem.className = 'list-group-item list-group-item-action';
+                    suggestionItem.textContent = product.name;
+                    suggestions.appendChild(suggestionItem);
                 });
             })
-            .catch(error => {
-                console.error('Error fetching the products:', error);
-            });
+            .catch(error => console.error('Error fetching product suggestions:', error));
+    } else {
+        document.getElementById('suggestions').innerHTML = '';  // Limpia si no hay suficiente texto
     }
-
-    // Cargar productos en los sliders
-    loadProducts('http://localhost:8080/api/categories/5', '#bestselling-products', '.bestselling-swiper');
-    loadProducts('http://localhost:8080/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
-    loadProducts('http://localhost:8080/api/categories/11', '#products-carousel', '#products-carousel');
-
-    // Manejo de tarjetas de productos
-    const productCards = document.querySelectorAll('.product-card');
-
-    productCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const productId = card.getAttribute('data-id');
-            if (productId) {
-                window.location.href = `single-product.html?id=${productId}`;
-            }
-        });
-    });
-
-    // Manejo de la información de la cuenta
-    fetch('/account-info')
-        .then(response => {
-            if (!response.ok) {
-                const userInfo = document.getElementById('user-info');
-                userInfo.innerHTML = ``;
-                throw new Error('No Autenticado');
-            }
-            return response.json();
-        })
-        .then(user => {
-            if (user.name) {
-                const userInfo = document.getElementById('user-info');
-                userInfo.innerHTML = `
-                    <p>Bienvenido, ${user.name}</p>
-                    <a href="/logout">Cerrar sesión</a>
-                `;
-            } else {
-                console.error('Nombre no encontrado');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching account info:', error);
-        });
 });
-document.getElementById('register-form').addEventListener('submit', function(event) {
-  event.preventDefault();
-
-  const formData = new FormData(this);
-  const formObject = Object.fromEntries(formData.entries());
-
-  fetch('/register', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formObject)
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.redirectUrl) {
-          window.location.href = data.redirectUrl; 
-      } else {
-          alert('Error during registration');
-      }
-  })
-  .catch(error => console.error('Error:', error));
-});
-
-
 
   </script>
 </body>

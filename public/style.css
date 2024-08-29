@@ -90,6 +90,75 @@ CSS STRUCTURE:
 /* Asegúrate de que el margen inferior sea suficiente para separar las secciones */
 
 /* Alinea las direcciones a la izquierda */
+
+/* Custom styles for carousel indicators and controls */
+.testimonial-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Efecto de sombra */
+  margin-bottom: 2rem;
+}
+
+.testimonial-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px); /* Efecto de elevación al pasar el mouse */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+a.text-decoration-none {
+  text-decoration: none;
+  color: inherit;
+}
+
+
+.quote-icon {
+  font-size: 30px;
+  color: #007bff;
+}
+
+.testimonial-content {
+  font-size: 1rem;
+  margin-top: 10px;
+  color: #555;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  position: absolute;
+  top: 50%;
+  width: auto;
+  height: auto;
+  transform: translateY(-50%);
+  z-index: 10;
+  color: #333;
+}
+
+/* Coloca la flecha derecha justo en el borde derecho del banner */
+.swiper-button-next {
+  right: -25px; /* Ajusta este valor según sea necesario */
+}
+
+/* Coloca la flecha izquierda justo en el borde izquierdo del banner */
+.swiper-button-prev {
+  left: -25px; /* Ajusta este valor según sea necesario */
+}
+
+/* Cambia el tamaño de las flechas si es necesario */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 14px;
+  color: #007bff;
+}
+
 .main-menu .d-flex.align-items-center {
   justify-content: flex-start; /* Alinea las direcciones a la izquierda */
 }

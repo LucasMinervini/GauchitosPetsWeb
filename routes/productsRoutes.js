@@ -49,4 +49,13 @@ router.post('/orders', orderController.createOrder);
 // Ruta para crear la preferencia de pago
 router.post('/products/create_preference', productController.createPreference);
 
+// Obtener detalles de producto
+router.get('/products/details/:id', productController.getDetailsById);
+
+//Obtener ficha tecnica de un producto por id
+router.get('/products/fichaTecnica/:id', productController.getFichaTecnica);
+
+// Ruta para crear una ficha técnica
+router.post('/products/fichaTecnica', productController.createFichaTecnica);
+
 module.exports = router;

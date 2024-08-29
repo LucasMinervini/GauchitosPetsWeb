@@ -4,14 +4,15 @@ const productController = require('../../controllers/productsController');
 
 const router = express.Router();
 
-// Crear un nuevo producto
-router.post('/products', productController.createProduct);
+// Integrar multer en la ruta que crea un nuevo producto
+app.post('/api/products', upload.array('images', 6), productController.createProduct);
+
 
 // Obtener todos los productos
 router.get('/products', productController.getAllProducts);
 
 // Obtener un producto por NOMBRE
-router.get('/products/:name', productController.getProductByName);
+router.get('/products/search', productController.getProductByName);
 
 // Obtener un producto por ID
 router.get('/products/:id', productController.getProductById);

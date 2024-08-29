@@ -256,7 +256,7 @@ app.post('/api/complete-purchase', (req, res) => {
 
       // Inserta la orden en la tabla orders usando el userId
       const orderQuery = 'INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, ?)';
-      db.query(orderQuery, [userId, total, 'pending'], (err, orderResult) => {
+      db.query(orderQuery, [userId, total, 'success'], (err, orderResult) => {
           if (err) {
               console.error('Error insertando la orden:', err);
               return res.status(500).json({ message: 'Error al procesar la compra: orden' });
@@ -280,7 +280,42 @@ app.post('/api/complete-purchase', (req, res) => {
   }
 });
 
+// Nueva ruta para que los usuarios vean sus órdenes
+app.get('/api/orders', (req, res) => {
+  const userId = req.session.userId;
 
+  if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const query = `
+      SELECT 
+          o.id AS order_id,
+          o.total_amount,
+          o.status,
+          o.created_at,
+          oi.product_name,
+          oi.quantity,
+          oi.price
+      FROM 
+          orders o
+      JOIN 
+          order_items oi ON o.id = oi.order_id
+      WHERE 
+          o.user_id = ?
+  `;
+
+  db.query(query, [userId], (err, results) => {
+      if (err) {
+          console.error('Error fetching orders:', err);
+          return res.status(500).json({ message: 'Error al obtener las órdenes' });
+      }
+
+      res.json(results);
+  });
+});
+
+// Endpoint to handle feedback from Mercado Pago
 // Endpoint to handle feedback from Mercado Pago
 app.get('/feedback', function (req, res) {
   const paymentInfo = {
@@ -289,14 +324,59 @@ app.get('/feedback', function (req, res) {
       merchant_order_id: req.query.merchant_order_id
   };
 
-  // Here, you might want to handle the order processing, 
-  // like saving to the database or updating the order status.
-
-  res.json(paymentInfo);
+  // Verificar si el pago fue exitoso y actualizar el estado de la orden
+  if (req.query.status === 'approved') {
+      const updateOrderStatusQuery = "UPDATE orders SET status = 'success' WHERE id = ?";
+      db.query(updateOrderStatusQuery, [req.query.merchant_order_id], (err, result) => {
+          if (err) {
+              console.error('Error updating order status:', err);
+              return res.status(500).send('Error al actualizar el estado de la orden');
+          }
+          res.send(`
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Pago Exitoso</title>
+                  <script>
+                      // Mostrar alerta y redirigir después de unos segundos
+                      alert("¡El pago se ha realizado con éxito!");
+                      setTimeout(function(){
+                          window.location.href = "/index.html";
+                      }, 3000); // Redirigir después de 3 segundos
+                  </script>
+              </head>
+              <body>
+                  <h1>Pago Exitoso</h1>
+                  <p>Redirigiendo a la página principal...</p>
+              </body>
+              </html>
+          `);
+      });
+  } else {
+      res.send(`
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Pago Fallido</title>
+              <script>
+                  alert("El pago no se pudo completar. Por favor, intente nuevamente.");
+                  setTimeout(function(){
+                      window.location.href = "/checkout.html";
+                  }, 3000); // Redirigir después de 5 segundos
+              </script>
+          </head>
+          <body>
+              <h1>Pago Fallido</h1>
+              <p>Redirigiendo a la página principal...</p>
+          </body>
+          </html>
+      `);
+  }
 });
-
-
-
 // Ruta protegida del dashboard
 app.get('/dashboard', (req, res) => {
   if (!req.session.userId) {
@@ -315,10 +395,14 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: { files: 6 }  // Limita el número de archivos a 6
+});
+
 
 // Integrar multer en la ruta que crea un nuevo producto
-app.post('/api/products', upload.single('image'), productController.createProduct);
+app.post('/api/products', upload.array('images', 6), productController.createProduct);
 
 // Rutas de productos externas
 app.use('/api', productRoutes);

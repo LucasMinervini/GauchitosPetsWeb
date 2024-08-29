@@ -9,7 +9,7 @@ const mercadopago = require('mercadopago'); // Asegúrate de requerir Mercado Pa
 
 // Configura el Access Token
 mercadopago.configure({
-  access_token: 'APP_USR-589186678721132-082016-cdc4325df4801f0f63adff9503c1dc6b-164054209'
+  access_token: 'APP_USR-1221336083666937-012620-3941044529350138e64a7055ed4ca37f-541732240'
 });
 
 const createPreference = (req, res) => {
@@ -47,8 +47,8 @@ const createPreference = (req, res) => {
 
 // Controlador para crear un producto
 const createProduct = (req, res) => {
-  console.log('req.body:', req.body);
-  console.log('req.file:', req.file);
+  console.log(req.body);   // Verifica los campos del formulario
+  console.log(req.files);  // Verifica que los archivos se están recibiendo
 
   const result = validateProd(req.body);
 
@@ -56,42 +56,70 @@ const createProduct = (req, res) => {
       return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
 
-  const { name, sku, description, retail_price, cost, stock_quantity, provider_id, category_id } = result.data;
-  const imageUrl = req.file ? `/images/${req.file.filename}` : null;
+  const { name, sku, description, retail_price, cost, stock_quantity, provider_id, category_id, category } = result.data;
+
+  let imageUrls = [];
+  if (Array.isArray(req.files) && req.files.length > 0) {
+      imageUrls = req.files.map(file => `/images/${file.filename}`);
+  } else if (req.files && req.files.filename) {
+      imageUrls = [`/images/${req.files.filename}`]; // Si solo se subió un archivo, req.files podría no ser un array
+  }
+
+  console.log("Generated imageUrls: ", imageUrls); 
+
+  // Asignar la primera imagen como la imagen principal
+  const mainImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;
+  console.log("Main image URL: ", mainImageUrl); // Verificar la URL de la imagen principal
 
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
-
   db.query(providerQuery, [provider_id], (err, providerResults) => {
       if (err || providerResults.length === 0) {
           return res.status(400).send('Invalid provider_id');
       }
 
       const newId = crypto.randomUUID();
-      const insertQuery = `
-          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id, image_url) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+      // Insertar el producto en la tabla `products`
+      const insertProductQuery = `
+          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id, category, image_url) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      db.query(insertQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id, imageUrl], (err, results) => {
+      const productValues = [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id, category, mainImageUrl];
+
+      db.query(insertProductQuery, productValues, (err, results) => {
           if (err) {
-              console.error('Error executing query:', err);
-              return res.status(500).send('Error executing query');
+              console.error('Error executing product query:', err);
+              return res.status(500).send('Error executing product query');
           }
 
-          const categoryInsertQuery = 'INSERT INTO product_categories (product_id, category_id) VALUES ?';
+          // Insertar las categorías relacionadas en la tabla `product_categories`
+          const insertCategoryQuery = `
+              INSERT INTO product_categories (product_id, category_id) 
+              VALUES ?
+          `;
+
+          // Preparar los valores para la inserción en `product_categories`
           const categoryValues = category_id.map(catId => [newId, catId]);
 
-          db.query(categoryInsertQuery, [categoryValues], (err) => {
+          db.query(insertCategoryQuery, [categoryValues], (err, results) => {
               if (err) {
-                  console.error('Error inserting categories:', err.sqlMessage || err.message);
+                  console.error('Error inserting categories:', err);
                   return res.status(500).send('Error inserting categories');
               }
 
-              res.status(201).send({ id: newId, ...result.data, image_url: imageUrl });
+              console.log("Product and categories created successfully with ID: ", newId);
+              res.status(201).send({ id: newId, ...result.data, image_urls: imageUrls });
           });
       });
   });
 };
+
+
+
+
+
+
 
 // Obtener todos los productos
 const getAllProducts = (req, res) => {
@@ -106,24 +134,37 @@ const getAllProducts = (req, res) => {
   });
 };
 
-// obtener un producto por nombre
-const getProductByName = (req,res) =>{
+// Obtener un producto por nombre
+const getProductByName = (req, res) => {
+  const { name } = req.query;
+  const query = `
+      SELECT 
+          id, 
+          name, 
+          retail_price, 
+          image_url 
+      FROM 
+          products 
+      WHERE 
+          LOWER(name) LIKE LOWER(?) 
+      LIMIT 10`;
 
-  const { name } = req.params;
-  db.query('SELECT * FROM products WHERE name = ?',[name],(err,results) =>{
+  db.query(query, [`%${name}%`], (err, results) => {
+      if (err) {
+          console.error('Error ejecutando la búsqueda:', err);
+          res.status(500).json({ error: 'Error ejecutando la búsqueda' });
+          return;
+      }
 
-    if(err){
-      console.log('Error executing query:',err);
-      res.status(500).send('Error executing query');
-      return;
-    }
-    if(results.length === 0){
-      res.status(404).send('Error executing query');
-    }
+      if (results.length === 0) {
+          res.status(404).json({ message: 'No se encontraron productos' });
+          return;
+      }
 
-    res.status(200).json(results[0]);
-  })
-}
+      res.json(results);  // Devuelve los productos como JSON
+  });
+};
+
 // Obtener productos por categoria
 const getCategory = (req, res) => {
   const category_id = parseInt(req.params.category_id, 10);
@@ -194,21 +235,117 @@ const getPriceProductById = (req,res) =>{
 
 // Obtener un producto por id
 const getProductById = (req, res) => {
-  
   const { id } = req.params;
+  
   db.query('SELECT * FROM products WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error('Error executing query:', err);
-      res.status(500).send('Error executing query');
+      console.error('Error ejecutando la consulta:', err);
+      res.status(500).send('Error ejecutando la consulta');
       return;
     }
+    
     if (results.length === 0) {
-      res.status(404).send('Product not found');
+      console.log('Producto no encontrado para el ID:', id);
+      res.status(404).send('Producto no encontrado');
       return;
     }
+    console.log('Producto encontrado:', results[0]);
     res.status(200).json(results[0]);
   });
 };
+// Obtener detalles de producto
+const getDetailsById = (req, res) => {
+  const { id } = req.params;
+
+  // Modificar la consulta para seleccionar solo los campos necesarios
+  const query = `
+    SELECT 
+      retail_price, 
+      description, 
+      image_url, 
+      name 
+    FROM 
+      products 
+    WHERE 
+      id = ?
+  `;
+
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error ejecutando la consulta:', err);
+      res.status(500).send('Error ejecutando la consulta');
+      return;
+    }
+    
+    if (results.length === 0) {
+      console.log('Producto no encontrado para el ID:', id);
+      res.status(404).send('Producto no encontrado');
+      return;
+    }
+    
+    console.log('Producto encontrado:', results[0]);
+    res.status(200).json(results[0]); // Devuelve solo los campos seleccionados
+  });
+};
+
+// FICHA TECNICA POR PRODUCTO
+const getFichaTecnica = (req, res) => {
+  const productId = req.params.id;  // Cambiado para coincidir con la ruta
+
+  const query = `SELECT * FROM product_technical_details WHERE product_id = ?`;
+
+  db.query(query, [productId], (error, results) => {
+      if (error) {
+          return res.status(500).send(error);
+      }
+      if (results.length === 0) {
+          return res.status(404).json({ message: 'Ficha técnica no encontrada' });
+      }
+      res.json(results[0]);  // Devuelve los detalles técnicos como JSON
+  });
+}
+
+// Controlador para crear una ficha técnica según la categoría del producto
+const createFichaTecnica = (req, res) => {
+  const { category, product_id, brand } = req.body;
+
+  let insertQuery = 'INSERT INTO product_technical_details (product_id, brand';
+  let queryParams = [product_id, brand];
+
+  switch (category) {
+      case 'alimentos':
+          const { nutritional_info, expiry_date } = req.body;
+          insertQuery += ', nutritional_info, expiry_date';
+          queryParams.push(nutritional_info, expiry_date);
+          break;
+
+      case 'ropa':
+          const { material, size } = req.body;
+          insertQuery += ', material, size';
+          queryParams.push(material, size);
+          break;
+
+      case 'accesorios':
+          const { dimensions } = req.body;
+          insertQuery += ', dimensions';
+          queryParams.push(dimensions);
+          break;
+
+      default:
+          return res.status(400).send('Categoría de producto no reconocida');
+  }
+
+  insertQuery += ') VALUES (?, ?, ?' + ', ?'.repeat(queryParams.length - 2) + ')';
+
+  db.query(insertQuery, queryParams, (err, results) => {
+      if (err) {
+          console.error('Error al insertar la ficha técnica:', err);
+          return res.status(500).send('Error al insertar la ficha técnica');
+      }
+      res.status(201).send({ message: 'Ficha técnica creada exitosamente', id: results.insertId });
+  });
+};
+
 
 //UPDATE de producto
 const updateProduct = (req, res) => {
@@ -321,14 +458,14 @@ const deleteProductById = (req, res) => {
     res.status(200).send({ id });
   });
 };
-
+//Insertar order
 const createOrder = async (req, res) => {
   const { userId, cartItems, totalAmount } = req.body;
 
   console.log('Datos recibidos:', { userId, cartItems, totalAmount });
 
   try {
-      // Crear la orden en la base de datos
+      
       const orderQuery = `
           INSERT INTO orders (user_id, total_amount, status) 
           VALUES (?, ?, ?)
@@ -384,5 +521,8 @@ module.exports = {
   getPriceProductById,
   getCategory,
   createOrder,
-  createPreference
+  createPreference,
+  getDetailsById,
+  getFichaTecnica,
+  createFichaTecnica
 };
