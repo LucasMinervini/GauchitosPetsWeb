@@ -336,23 +336,37 @@
   </div>
   
   <div class="row mt-5">
-      <div class="col-md-6">
-          <h3>Ficha Técnica</h3>
-          <ul class="list-unstyled">
-              <li><strong>Edad:</strong> <span id="product-age">Cachorro</span></li>
-              <li><strong>Marca:</strong> <span id="product-brand">Natural Meat</span></li>
-              <li><strong>Tamaño de la Mascota:</strong> <span id="pet-size">Todos los tamaños</span></li>
-              <li><strong>Alimento Medicado:</strong> <span id="medicated-food">No</span></li>
-              <li><strong>Presentaciones:</strong> <span id="product-presentation">15 Kg</span></li>
-              <li><strong>Sabor:</strong> <span id="product-flavor">Carne y Frutas</span></li>
-          </ul>
-      </div>
-      
-      <div class="col-md-6">
-          <h3>Descripción</h3>
-          <p id="product-description">Aquí va la descripción detallada del producto.</p>
-      </div>
-  </div>
+    <div class="col-md-6">
+        <h3>Ficha Técnica</h3>
+
+        <!-- Ficha Técnica para Alimentos -->
+        <ul id="ficha-alimentos" class="list-unstyled" style="display: none;">
+            <li><strong>Edad:</strong> <span id="product-age">Cachorro</span></li>
+            <li><strong>Marca:</strong> <span id="product-brand">Natural Meat</span></li>
+            <li><strong>Tamaño de la Mascota:</strong> <span id="pet-size">Todos los tamaños</span></li>
+            <li><strong>Alimento Medicado:</strong> <span id="medicated-food">No</span></li>
+            <li><strong>Presentaciones:</strong> <span id="product-presentation">15 Kg</span></li>
+            <li><strong>Sabor:</strong> <span id="product-flavor">Carne y Frutas</span></li>
+        </ul>
+
+        <!-- Ficha Técnica para Ropa -->
+        <ul id="ficha-ropa" class="list-unstyled" style="display: none;">
+            <li><strong>Marca:</strong> <span id="product-brand">Nike</span></li>
+            <li><strong>Material:</strong> <span id="product-material">Algodón</span></li>
+            <li><strong>Tamaño:</strong> <span id="product-size">M</span></li>
+        </ul>
+
+        <!-- Ficha Técnica para Accesorios -->
+        <ul id="ficha-accesorios" class="list-unstyled" style="display: none;">
+            <li><strong>Marca:</strong> <span id="product-brand">Gucci</span></li>
+            <li><strong>Dimensiones:</strong> <span id="product-dimensions">10x5x3 cm</span></li>
+        </ul>
+    </div>
+    
+    <div class="col-md-6">
+        <h3>Descripción</h3>
+        <p id="product-description">Aquí va la descripción detallada del producto.</p>
+    </div>
 </div>
 
 <div id="myModal" class="modal">
@@ -457,78 +471,78 @@
 <script src="js/bootstrap.bundle.min.js"></script>
 <script src="https://code.iconify.design/2/2.1.2/iconify.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-
-    if (productId) {
-        const productApiUrl = `http://localhost:8080/api/products/details/${productId}`;
-        const fichaTecnicaApiUrl = `http://localhost:8080/api/products/fichaTecnica/${productId}`;
-
-        loadSingleProduct(productApiUrl);
-        loadFichaTecnica(fichaTecnicaApiUrl);
-    } else {
-        document.getElementById('product-name').textContent = 'Producto no encontrado';
-    }
-});
-
-function loadSingleProduct(apiUrl) {
-    fetch(apiUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al obtener el producto');
-            }
-            return response.json();
-        })
-        .then(product => {
-            if (!product || !product.name) {
-                document.getElementById('product-name').textContent = 'Producto no encontrado';
-                document.getElementById('product-price').textContent = 'Precio no disponible';
-                document.getElementById('product-description').textContent = 'Descripción no disponible';
-                return;
-            }
-
-            document.getElementById('product-name').textContent = product.name;
-            document.getElementById('product-price').textContent = product.retail_price ? `$${parseFloat(product.retail_price).toFixed(2)}` : 'Precio no disponible';
-            document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
-
-            const imageUrls = product.image_url.split(',');
-            if (imageUrls && imageUrls.length > 0) {
-                document.getElementById('product-image').src = imageUrls[0];
-            } else {
-                document.getElementById('product-image').src = 'default-image.png';
-            }
-
-            const gallery = document.getElementById('product-gallery');
-            gallery.innerHTML = '';
-            imageUrls.forEach(url => {
-                const imgElement = document.createElement('img');
-                imgElement.src = url.trim();
-                imgElement.alt = product.name;
-                imgElement.addEventListener('click', function() {
-                    changeMainImage(url);
-                });
-                gallery.appendChild(imgElement);
-            });
-
-            const addToCartButton = `
-                <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                    Agregar al carrito
-                </button>
-            `;
-            document.getElementById('product-actions').innerHTML = addToCartButton;
-
-            document.querySelector('.btn-add-to-cart').addEventListener('click', function() {
-                addToCart(product.id, product.name, product.retail_price);
-            });
-        })
-        .catch(error => {
-            console.error('Error al obtener el producto:', error);
-            document.getElementById('product-name').textContent = 'Error al cargar el producto';
-        });
-}
-
-function loadFichaTecnica(apiUrl) {
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('id');
+  
+      if (productId) {
+          const productApiUrl = `http://localhost:8080/api/products/details/${productId}`;
+          const fichaTecnicaApiUrl = `http://localhost:8080/api/products/fichaTecnica/${productId}`;
+  
+          loadSingleProduct(productApiUrl);
+          loadFichaTecnica(fichaTecnicaApiUrl);
+      } else {
+          document.getElementById('product-name').textContent = 'Producto no encontrado';
+      }
+  });
+  
+  function loadSingleProduct(apiUrl) {
+      fetch(apiUrl)
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Error al obtener el producto');
+              }
+              return response.json();
+          })
+          .then(product => {
+              if (!product || !product.name) {
+                  document.getElementById('product-name').textContent = 'Producto no encontrado';
+                  document.getElementById('product-price').textContent = 'Precio no disponible';
+                  document.getElementById('product-description').textContent = 'Descripción no disponible';
+                  return;
+              }
+  
+              document.getElementById('product-name').textContent = product.name;
+              document.getElementById('product-price').textContent = product.retail_price ? `$${parseFloat(product.retail_price).toFixed(2)}` : 'Precio no disponible';
+              document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
+  
+              const imageUrls = product.image_url.split(',');
+              if (imageUrls && imageUrls.length > 0) {
+                  document.getElementById('product-image').src = imageUrls[0];
+              } else {
+                  document.getElementById('product-image').src = 'default-image.png';
+              }
+  
+              const gallery = document.getElementById('product-gallery');
+              gallery.innerHTML = '';
+              imageUrls.forEach(url => {
+                  const imgElement = document.createElement('img');
+                  imgElement.src = url.trim();
+                  imgElement.alt = product.name;
+                  imgElement.addEventListener('click', function() {
+                      changeMainImage(url);
+                  });
+                  gallery.appendChild(imgElement);
+              });
+  
+              const addToCartButton = `
+                  <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                      Agregar al carrito
+                  </button>
+              `;
+              document.getElementById('product-actions').innerHTML = addToCartButton;
+  
+              document.querySelector('.btn-add-to-cart').addEventListener('click', function() {
+                  addToCart(product.id, product.name, product.retail_price);
+              });
+          })
+          .catch(error => {
+              console.error('Error al obtener el producto:', error);
+              document.getElementById('product-name').textContent = 'Error al cargar el producto';
+          });
+  }
+  
+  function loadFichaTecnica(apiUrl) {
     fetch(apiUrl)
         .then(response => {
             if (!response.ok) {
@@ -537,53 +551,68 @@ function loadFichaTecnica(apiUrl) {
             return response.json();
         })
         .then(details => {
-            if (!details) {
-                document.getElementById('product-age').textContent = 'No disponible';
-                document.getElementById('product-brand').textContent = 'No disponible';
-                document.getElementById('pet-size').textContent = 'No disponible';
-                document.getElementById('medicated-food').textContent = 'No disponible';
-                document.getElementById('product-presentation').textContent = 'No disponible';
-                document.getElementById('product-flavor').textContent = 'No disponible';
-                return;
-            }
+            console.log('Detalles recibidos:', details);
 
-            document.getElementById('product-age').textContent = details.age || 'No disponible';
-            document.getElementById('product-brand').textContent = details.brand || 'No disponible';
-            document.getElementById('pet-size').textContent = details.pet_size || 'No disponible';
-            document.getElementById('medicated-food').textContent = details.medicated_food ? 'Sí' : 'No';
-            document.getElementById('product-presentation').textContent = details.presentation || 'No disponible';
-            document.getElementById('product-flavor').textContent = details.flavor || 'No disponible';
+            // Asumir que el tipo de ficha técnica puede depender de la existencia de ciertos campos
+            if (details.age) {
+                // Mostrar ficha técnica para alimentos
+                document.getElementById('ficha-alimentos').style.display = 'block';
+                document.getElementById('product-age').textContent = details.age || 'No disponible';
+                document.getElementById('product-brand').textContent = details.brand || 'No disponible';
+                document.getElementById('pet-size').textContent = details.pet_size || 'No disponible';
+                document.getElementById('medicated-food').textContent = details.medicated_food ? 'Sí' : 'No';
+                document.getElementById('product-presentation').textContent = details.presentation || 'No disponible';
+                document.getElementById('product-flavor').textContent = details.flavor || 'No disponible';
+            } else if (details.material || details.size || details.dimensions) {
+                // Mostrar ficha técnica para ropa o accesorios según los campos
+                if (details.material || details.size) {
+                    document.getElementById('ficha-ropa').style.display = 'block';
+                    document.getElementById('product-brand').textContent = details.brand || 'No disponible';
+                    document.getElementById('product-material').textContent = details.material || 'No disponible';
+                    document.getElementById('product-size').textContent = details.size || 'No disponible';
+                } else {
+                    document.getElementById('ficha-accesorios').style.display = 'block';
+                    document.getElementById('product-brand').textContent = details.brand || 'No disponible';
+                    document.getElementById('product-dimensions').textContent = details.dimensions || 'No disponible';
+                }
+            } else {
+                console.error('No se encontró la categoría adecuada para mostrar la ficha técnica.');
+            }
         })
         .catch(error => {
-            console.error('Error al obtener la ficha técnica:', error);
+            console.error('Error al obtener la ficha técnica:', error.message);
         });
 }
 
-function changeMainImage(src) {
-    const mainImage = document.getElementById('product-image');
-    mainImage.src = src;
 
-    const modal = document.getElementById("myModal");
-    const modalImg = document.getElementById("img01");
 
-    mainImage.onclick = function() {
-        modal.style.display = "block";
-        modalImg.src = this.src;
-    }
-
-    const span = document.getElementsByClassName("close")[0];
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    modal.onclick = function(event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    }
-}
-
-</script>
+  
+  function changeMainImage(src) {
+      const mainImage = document.getElementById('product-image');
+      mainImage.src = src;
+  
+      const modal = document.getElementById("myModal");
+      const modalImg = document.getElementById("img01");
+  
+      mainImage.onclick = function() {
+          modal.style.display = "block";
+          modalImg.src = this.src;
+      }
+  
+      const span = document.getElementsByClassName("close")[0];
+      span.onclick = function() {
+          modal.style.display = "none";
+      }
+  
+      modal.onclick = function(event) {
+          if (event.target === modal) {
+              modal.style.display = "none";
+          }
+      }
+  }
+  
+  </script>
+  
 
 </body>
 </html>

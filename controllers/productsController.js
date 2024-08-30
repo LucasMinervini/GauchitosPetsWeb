@@ -45,21 +45,31 @@ const createPreference = (req, res) => {
 };
 
 
-// Controlador para crear un producto
 const createProduct = (req, res) => {
-  console.log(req.body);
-  console.log(req.files);
+  // Mostrar todos los datos recibidos para depuración
+  console.log('Datos recibidos:', req.body);
 
-  const result = validateProd(req.body);
+  // Desestructurar los valores directamente de req.body
+  const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id } = req.body;
+
+  // Validar que la categoría es una de las permitidas antes de la validación
+  console.log("Categoría recibida antes de validación:", category);
+  const validCategories = ['alimentos', 'ropa', 'accesorios'];
+  if (!validCategories.includes(category)) {
+      return res.status(400).json({ error: 'Categoría no válida' });
+  }
+
+  // Validación de los datos del producto
+  const result = validateProd({ name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id });
 
   if (!result.success) {
       return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
 
-  const { name, sku, description, retail_price, cost, stock_quantity, provider_id } = result.data;
-
-  // Asegúrate de que category_ids sea un array de enteros
+  // Manejo de categorías en formato de array
   let categoryIds = req.body.category_id;
+  console.log('Category IDs before validation:', categoryIds);
+
   if (typeof categoryIds === 'string') {
       categoryIds = JSON.parse(categoryIds);
   }
@@ -68,15 +78,16 @@ const createProduct = (req, res) => {
   }
   categoryIds = categoryIds.map(id => parseInt(id, 10));
 
+  // Manejo de URLs de imágenes
   let imageUrls = [];
   if (Array.isArray(req.files) && req.files.length > 0) {
       imageUrls = req.files.map(file => `/images/${file.filename}`);
   } else if (req.files && req.files.filename) {
       imageUrls = [`/images/${req.files.filename}`];
   }
-
   const concatenatedImageUrls = imageUrls.join(',');
 
+  // Verificación del proveedor
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
   db.query(providerQuery, [provider_id], (err, providerResults) => {
       if (err || providerResults.length === 0) {
@@ -85,17 +96,18 @@ const createProduct = (req, res) => {
 
       const newId = crypto.randomUUID();
       const insertProductQuery = `
-          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, provider_id, image_url) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_url) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, provider_id, concatenatedImageUrls], (err, results) => {
+      // Inserción del producto en la base de datos
+      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, concatenatedImageUrls], (err, results) => {
           if (err) {
               console.error('Error executing query:', err);
               return res.status(500).send('Error executing query');
           }
 
-          // Insertar en la tabla product_categories
+          // Inserción en la tabla de categorías del producto
           const insertCategoryQuery = `
               INSERT INTO product_categories (product_id, category_id) 
               VALUES (?, ?)
@@ -138,6 +150,8 @@ const createProduct = (req, res) => {
       });
   });
 };
+
+
 
 // Obtener todos los productos
 const getAllProducts = (req, res) => {
@@ -332,44 +346,71 @@ const getFichaTecnica = (req, res) => {
 
 // Controlador para crear una ficha técnica según la categoría del producto
 const createFichaTecnica = (req, res) => {
-  const { category, product_id, brand } = req.body;
+  const {
+    category,
+    product_id,
+    brand,
+    nutritional_info = null,
+    expiry_date = null,
+    age = null,
+    pet_size = null,
+    medicated_food = null,
+    presentation = null,
+    flavor = null,
+    material = null,
+    size = null,
+    dimensions = null
+  } = req.body;
 
   let insertQuery = 'INSERT INTO product_technical_details (product_id, brand';
   let queryParams = [product_id, brand];
 
-  switch (category) {
-      case 'alimentos':
-          const { nutritional_info, expiry_date } = req.body;
-          insertQuery += ', nutritional_info, expiry_date';
-          queryParams.push(nutritional_info, expiry_date);
-          break;
-
-      case 'ropa':
-          const { material, size } = req.body;
-          insertQuery += ', material, size';
-          queryParams.push(material, size);
-          break;
-
-      case 'accesorios':
-          const { dimensions } = req.body;
-          insertQuery += ', dimensions';
-          queryParams.push(dimensions);
-          break;
-
-      default:
-          return res.status(400).send('Categoría de producto no reconocida');
+  // Convertir el valor de medicated_food a booleano
+  let medicatedFoodBoolean = null;
+  if (medicated_food) {
+    if (medicated_food.toLowerCase() === 'sí' || medicated_food.toLowerCase() === 'si') {
+      medicatedFoodBoolean = true;
+    } else if (medicated_food.toLowerCase() === 'no') {
+      medicatedFoodBoolean = false;
+    } else {
+      return res.status(400).send('El valor de medicated_food debe ser "Sí" o "No"');
+    }
   }
 
-  insertQuery += ') VALUES (?, ?, ?' + ', ?'.repeat(queryParams.length - 2) + ')';
+  // Construir la consulta SQL dinámica basada en la categoría
+  switch (category) {
+    case 'alimentos':
+      insertQuery += ', nutritional_info, expiry_date, age, pet_size, medicated_food, presentation, flavor';
+      queryParams.push(nutritional_info, expiry_date, age, pet_size, medicatedFoodBoolean, presentation, flavor);
+      break;
+
+    case 'ropa':
+      insertQuery += ', material, size';
+      queryParams.push(material, size);
+      break;
+
+    case 'accesorios':
+      insertQuery += ', dimensions';
+      queryParams.push(dimensions);
+      break;
+
+    default:
+      return res.status(400).send('Categoría de producto no reconocida');
+  }
+
+  // Cerrar la consulta SQL
+  insertQuery += ') VALUES (?, ?' + ', ?'.repeat(queryParams.length - 2) + ')';
 
   db.query(insertQuery, queryParams, (err, results) => {
-      if (err) {
-          console.error('Error al insertar la ficha técnica:', err);
-          return res.status(500).send('Error al insertar la ficha técnica');
-      }
-      res.status(201).send({ message: 'Ficha técnica creada exitosamente', id: results.insertId });
+    if (err) {
+      console.error('Error al insertar la ficha técnica:', err);
+      return res.status(500).send('Error al insertar la ficha técnica');
+    }
+    res.status(201).send({ message: 'Ficha técnica creada exitosamente', id: results.insertId });
   });
 };
+
+
 
 
 //UPDATE de producto

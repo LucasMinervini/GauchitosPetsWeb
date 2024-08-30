@@ -42,7 +42,11 @@
             <input type="number" id="cost" name="cost" placeholder="Costo" required>
             <input type="number" id="stock_quantity" name="stock_quantity" placeholder="Cantidad en stock" required>
             <input type="text" id="category_id" name="category_id" placeholder="IDs de categorías (separados por comas)" required>
-            <input type="text" id="category" name="category" placeholder="Categoría del producto (ej. alimentos, ropa, accesorios)" required>
+            <select name="category" required>
+                <option value="alimentos">Alimentos</option>
+                <option value="ropa">Ropa</option>
+                <option value="accesorios">Accesorios</option>
+            </select>
             <input type="number" id="provider_id" name="provider_id" placeholder="ID de proveedor" required>
             <input type="file" id="images" name="images" accept="image/*" multiple required>
             <button type="submit">Crear Producto</button>
