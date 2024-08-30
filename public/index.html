@@ -1116,7 +1116,7 @@
                     products.forEach(product => {
                         // Handle multiple images and choose the first one as the main image
                         const imageUrls = product.image_url.split(',');
-                        const mainImageUrl = imageUrls.length > 0 ? imageUrls[0].trim() : 'default-image.png'; // Use the first image or a default one
+                        const mainImageUrl = imageUrls.length > 0 ? imageUrls[0].trim() : 'default-image.png'; 
 
                         const productElement = `
                             <div class="swiper-slide">
