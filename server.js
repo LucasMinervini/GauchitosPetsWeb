@@ -65,7 +65,6 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta para servir la página principal
@@ -105,7 +104,6 @@ app.post('/register', (req, res) => {
     });
   });
 });
-
 
 // Ruta para loguear usuarios
 app.post('/login', (req, res) => {
@@ -150,10 +148,6 @@ app.post('/login', (req, res) => {
 
 // Ruta para obtener la información de la cuenta del usuario
 app.get('/account-info', (req, res) => {
-  if (!req.session.userId) {
-      return res.status(401).send('Unauthorized');
-  }
-
   const query = 'SELECT name, email, address, phone, user_type_id FROM users WHERE id = ?';
   db.query(query, [req.session.userId], (err, results) => {
       if (err) {
@@ -165,8 +159,6 @@ app.get('/account-info', (req, res) => {
       }
 
       const user = results[0];
-      // Verificar qué datos se están enviando
-      console.log('User data:', user); // Agrega este log para verificar los datos
       res.json({
           name: user.name,
           email: user.email,
@@ -177,12 +169,9 @@ app.get('/account-info', (req, res) => {
   });
 });
 
-
-app.get('/account', (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'account.html'));
+// Ruta para servir la página de consulta.html
+app.get('/consulta', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'consulta.html'));
 });
 
 // Ruta para manejar la compra de un producto
@@ -231,47 +220,34 @@ app.post('/api/complete-purchase', (req, res) => {
   if (req.session && req.session.userId) {
       // Usuario logueado, usar su ID
       userId = req.session.userId;
-      console.log('Usuario logueado, ID:', userId);
       insertOrder(userId);
   } else {
       // Usuario no logueado, insertar como nuevo cliente en la tabla customers
       const insertCustomerQuery = 'INSERT INTO customers (name, email) VALUES (?, ?)';
       db.query(insertCustomerQuery, [customerInfo.name, customerInfo.email], (err, customerResult) => {
           if (err) {
-              console.error('Error insertando cliente:', err);
               return res.status(500).json({ message: 'Error al procesar la compra: cliente' });
           }
 
           userId = customerResult.insertId;  // Usar este ID como user_id en la tabla orders
-          console.log('Nuevo cliente insertado, ID:', userId);
           insertOrder(userId);
       });
   }
 
   function insertOrder(userId) {
-      // Asegurarse de que userId es válido antes de proceder
-      if (!userId) {
-          console.error('userId inválido:', userId);
-          return res.status(500).json({ message: 'Error al procesar la compra: userId inválido' });
-      }
-
-      // Inserta la orden en la tabla orders usando el userId
       const orderQuery = 'INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, ?)';
       db.query(orderQuery, [userId, total, 'success'], (err, orderResult) => {
           if (err) {
-              console.error('Error insertando la orden:', err);
               return res.status(500).json({ message: 'Error al procesar la compra: orden' });
           }
 
           const orderId = orderResult.insertId;
 
-          // Inserta cada artículo de la orden en la tabla order_items, incluyendo product_name
           const orderItemsQuery = 'INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES ?';
           const orderItemsData = items.map(item => [orderId, item.id, item.name, item.quantity, item.price]);
 
           db.query(orderItemsQuery, [orderItemsData], (err, itemsResult) => {
               if (err) {
-                  console.error('Error insertando artículos de la orden:', err);
                   return res.status(500).json({ message: 'Error al procesar la compra: artículos' });
               }
 
@@ -284,10 +260,6 @@ app.post('/api/complete-purchase', (req, res) => {
 // Nueva ruta para que los usuarios vean sus órdenes
 app.get('/api/orders', (req, res) => {
   const userId = req.session.userId;
-
-  if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized' });
-  }
 
   const query = `
       SELECT 
@@ -308,7 +280,6 @@ app.get('/api/orders', (req, res) => {
 
   db.query(query, [userId], (err, results) => {
       if (err) {
-          console.error('Error fetching orders:', err);
           return res.status(500).json({ message: 'Error al obtener las órdenes' });
       }
 
@@ -317,7 +288,6 @@ app.get('/api/orders', (req, res) => {
 });
 
 // Endpoint to handle feedback from Mercado Pago
-// Endpoint to handle feedback from Mercado Pago
 app.get('/feedback', function (req, res) {
   const paymentInfo = {
       payment_id: req.query.payment_id,
@@ -325,12 +295,10 @@ app.get('/feedback', function (req, res) {
       merchant_order_id: req.query.merchant_order_id
   };
 
-  // Verificar si el pago fue exitoso y actualizar el estado de la orden
   if (req.query.status === 'approved') {
       const updateOrderStatusQuery = "UPDATE orders SET status = 'success' WHERE id = ?";
       db.query(updateOrderStatusQuery, [req.query.merchant_order_id], (err, result) => {
           if (err) {
-              console.error('Error updating order status:', err);
               return res.status(500).send('Error al actualizar el estado de la orden');
           }
           res.send(`
@@ -341,7 +309,6 @@ app.get('/feedback', function (req, res) {
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
                   <title>Pago Exitoso</title>
                   <script>
-                      // Mostrar alerta y redirigir después de unos segundos
                       alert("¡El pago se ha realizado con éxito!");
                       setTimeout(function(){
                           window.location.href = "/index.html";
@@ -378,11 +345,9 @@ app.get('/feedback', function (req, res) {
       `);
   }
 });
+
 // Ruta protegida del dashboard
 app.get('/dashboard', (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login');
-  }
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
@@ -401,17 +366,16 @@ const upload = multer({
   limits: { files: 6 }  // Limita el número de archivos a 6
 });
 
-
 // Integrar multer en la ruta que crea un nuevo producto
 app.post('/api/products', upload.array('images', 6), productController.createProduct);
 
 // Rutas de productos externas
 app.use('/api', productRoutes);
+
 // Ruta para servir la página de registro
 app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
-
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
