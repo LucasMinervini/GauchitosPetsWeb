@@ -362,73 +362,118 @@ const getFichaTecnica = (req, res) => {
 
 // Controlador para crear una ficha técnica según la categoría del producto
 const createFichaTecnica = (req, res) => {
+  console.log(req.body); // Esto te mostrará los datos recibidos del cliente
+
   const {
-      category,
-      product_id,
-      brand,
-      nutritional_info = null,
-      expiry_date = null,
-      age = null,
-      pet_size = null,
-      medicated_food = null,
-      presentation = null,
-      flavor = null,
-      material = null,
-      size = null,
-      dimensions = null
+    category,
+    product_id,
+    brand,
+    nutritional_info, 
+    expiry_date,
+    age, 
+    pet_size, 
+    medicated_food = 0, 
+    presentation = [], 
+    flavor,
+    material,
+    size,
+    dimensions
   } = req.body;
 
+  // Validación de campos obligatorios
   if (!product_id || !brand) {
-      return res.status(400).send('Product ID y Brand son requeridos');
+    return res.status(400).send('Product ID y Brand son requeridos');
   }
 
-  let insertQuery = 'INSERT INTO product_technical_details (product_id, brand, category';
+  // Crear consulta base de inserción
+  let insertQuery = `
+    INSERT INTO product_technical_details 
+    (product_id, brand, category
+  `;
   let queryParams = [product_id, brand, category];
 
+  // Agregar campos según la categoría
   switch (category.toLowerCase().trim()) {
-      case 'alimentos':
-          insertQuery += ', nutritional_info, expiry_date, age, pet_size, medicated_food, presentation, flavor';
-          queryParams.push(nutritional_info, expiry_date, age, pet_size, medicated_food, presentation, flavor);
-          break;
-      case 'ropa':
-          insertQuery += ', material, size';
-          queryParams.push(material, size);
-          break;
-      case 'accesorios':
-          insertQuery += ', dimensions';
-          queryParams.push(dimensions);
-          break;
-      default:
-          return res.status(400).send('Categoría de producto no reconocida');
+    case 'alimentos':
+      insertQuery += ', nutritional_info, expiry_date, age, pet_size, medicated_food, material, size, dimensions';
+      queryParams.push(nutritional_info, expiry_date, age, pet_size, medicated_food, material, size, dimensions);
+      break;
+    case 'ropa':
+      insertQuery += ', material, size';
+      queryParams.push(material, size);
+      break;
+    case 'accesorios':
+      insertQuery += ', dimensions';
+      queryParams.push(dimensions);
+      break;
+    default:
+      return res.status(400).send('Categoría de producto no reconocida');
   }
 
   insertQuery += ') VALUES (?, ?, ?' + ', ?'.repeat(queryParams.length - 3) + ')';
 
+  // Ejecutar la consulta de inserción principal
   db.query(insertQuery, queryParams, (err, results) => {
-      if (err) {
-          console.error('Error al insertar la ficha técnica:', err);
-          return res.status(500).send('Error al insertar la ficha técnica');
-      }
+    if (err) {
+      console.error('Error al insertar la ficha técnica:', err);
+      return res.status(500).send('Error al insertar la ficha técnica');
+    }
 
-      // Devolver todos los detalles, incluyendo la categoría
-      res.status(201).send({
-          id: results.insertId,
-          product_id,
-          brand,
-          nutritional_info,
-          expiry_date,
-          age,
-          pet_size,
-          medicated_food,
-          presentation,
-          flavor,
-          material,
-          size,
-          dimensions,
-          category // Incluye la categoría en la respuesta
+    // Insertar las presentaciones si existen
+    if (presentation.length > 0) {
+      const presentationInsertQuery = 'INSERT INTO product_presentations (product_id, presentation) VALUES (?, ?)';
+      presentation.forEach(pres => {
+        db.query(presentationInsertQuery, [product_id, pres], (err) => {
+          if (err) {
+            console.error('Error al insertar la presentación:', err);
+          }
+        });
       });
+    }
+
+    // Devolver los detalles insertados basados en la categoría
+    let responseData = {
+      id: results.insertId,
+      product_id,
+      brand,
+      category
+    };
+
+    // Agregar campos dependiendo de la categoría
+    if (category.toLowerCase().trim() === 'alimentos') {
+      responseData = {
+        ...responseData,
+        nutritional_info,
+        expiry_date,
+        age,
+        pet_size,
+        medicated_food,
+        material,
+        size,
+        dimensions
+      };
+    } else if (category.toLowerCase().trim() === 'ropa') {
+      responseData = {
+        ...responseData,
+        material,
+        size
+      };
+    } else if (category.toLowerCase().trim() === 'accesorios') {
+      responseData = {
+        ...responseData,
+        dimensions
+      };
+    }
+
+    // Enviar respuesta
+    res.status(201).send(responseData);
   });
 };
+
+
+
+
+
 
 
 

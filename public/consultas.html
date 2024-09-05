@@ -19,13 +19,14 @@
         document.addEventListener('DOMContentLoaded', function () {
             // Verificar si la contraseña ya fue ingresada correctamente
             if (localStorage.getItem('accessGranted') !== 'true') {
+                
                 const password = prompt("Por favor, ingresa la contraseña para acceder:");
     
                 // Verificar si la contraseña es correcta
                 if (password === "yotevienlaB") {
                     // Almacenar en localStorage que el acceso fue concedido
                     localStorage.setItem('accessGranted', 'true');
-                    window.location.href = "consultas.html"; // Redirigir a consultas.html si es correcta
+                    
                 } else {
                     alert("Contraseña incorrecta. No puedes acceder a esta página.");
                     window.location.href = "index.html"; // Redirigir a la página principal si es incorrecta
@@ -130,58 +131,72 @@
             <h2>Crear Ficha Técnica</h2>
             <div class="mb-4">
                 <label for="categorySelect" class="form-label">Selecciona la categoría</label>
-                <select id="categorySelect" class="form-select">
+                <select id="categorySelect" class="form-select" name="category">
                     <option value="">Selecciona una categoría</option>
                     <option value="alimentos">Alimentos</option>
                     <option value="ropa">Ropa</option>
                     <option value="accesorios">Accesorios</option>
                 </select>
             </div>
-
+        
             <!-- Formulario para Alimentos -->
-            <form id="fichaAlimentosForm" style="display: none;">
+            <form id="fichaAlimentosForm" style="display: none;" method="POST" action="http://localhost:8080/api/products" enctype="application/x-www-form-urlencoded">
                 <h3>Ficha Técnica para Alimentos</h3>
                 <div class="mb-3">
                     <label for="product_id_alimentos" class="form-label">ID del producto</label>
-                    <input type="text" class="form-control" id="product_id_alimentos" placeholder="ID del producto">
+                    <input type="text" class="form-control" id="product_id_alimentos" name="product_id" placeholder="ID del producto">
                 </div>
                 <div class="mb-3">
                     <label for="age_alimentos" class="form-label">Edad</label>
-                    <input type="number" class="form-control" id="age_alimentos" placeholder="Edad del animal">
+                    <input type="number" class="form-control" id="age_alimentos" name="age" placeholder="Edad del animal">
                 </div>
                 <div class="mb-3">
                     <label for="brand_alimentos" class="form-label">Marca</label>
-                    <input type="text" class="form-control" id="brand_alimentos" placeholder="Marca del producto">
+                    <input type="text" class="form-control" id="brand_alimentos" name="brand" placeholder="Marca del producto">
                 </div>
                 <div class="mb-3">
                     <label for="nutritional_info" class="form-label">Información Nutricional</label>
-                    <input type="text" class="form-control" id="nutritional_info" placeholder="Información Nutricional">
+                    <input type="text" class="form-control" id="nutritional_info" name="nutritional_info" placeholder="Información Nutricional">
                 </div>
                 <div class="mb-3">
                     <label for="expiry_date" class="form-label">Fecha de Expiración</label>
-                    <input type="date" class="form-control" id="expiry_date" placeholder="Fecha de Expiración">
+                    <input type="date" class="form-control" id="expiry_date" name="expiry_date" placeholder="Fecha de Expiración">
                 </div>
                 <div class="mb-3">
                     <label for="pet_size" class="form-label">Tamaño de la Mascota</label>
-                    <input type="text" class="form-control" id="pet_size" placeholder="Tamaño de la Mascota">
+                    <input type="text" class="form-control" id="pet_size" name="pet_size" placeholder="Tamaño de la Mascota">
                 </div>
                 <div class="mb-3">
                     <label for="medicated_food" class="form-label">Alimento Medicado</label>
-                    <select class="form-select" id="medicated_food">
-                        <option value="si">Sí</option>
-                        <option value="no">No</option>
+                    <select class="form-select" id="medicated_food" name="medicated_food">
+                        <option value="1">Sí</option>
+                        <option value="0">No</option>
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label for="presentation" class="form-label">Presentación</label>
-                    <input type="text" class="form-control" id="presentation" placeholder="Presentación del producto">
-                </div>
+
                 <div class="mb-3">
                     <label for="flavor" class="form-label">Sabor</label>
-                    <input type="text" class="form-control" id="flavor" placeholder="Sabor del producto">
+                    <input type="text" class="form-control" id="flavor" name="flavor" placeholder="Sabor del producto">
                 </div>
+
+                <!-- Campos dinámicos de presentaciones -->
+<div class="form-group">
+    <label for="presentation">Presentaciones</label>
+    <div id="presentationsContainerAlimentos">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="presentation[]" placeholder="Presentación (e.g., 15kg)">
+            <button class="btn btn-danger" type="button" onclick="removePresentationFieldAlimentos(this)">Eliminar</button>
+        </div>
+    </div>
+    <button type="button" class="btn btn-primary" onclick="addPresentationFieldAlimentos()">Agregar otra presentación</button>
+</div>
+        
+                
                 <button type="submit" class="btn btn-success">Crear Ficha Técnica</button>
             </form>
+        </section>
+</form>
+
 
             <!-- Formulario para Ropa -->
             <form id="fichaRopaForm" style="display: none;">
@@ -473,15 +488,25 @@ document.querySelectorAll('#fichaAlimentosForm, #fichaRopaForm, #fichaAccesorios
 
         // Capturar todos los campos del formulario
         formData.forEach((value, key) => {
-            if (value) {
-                formEntries[key] = value.trim();
-            } else {
-                console.error(`El campo ${key} está vacío.`);
-            }
+            formEntries[key] = value ? value.trim() : null;  // Manejar campos vacíos
         });
 
+        // Capturar todas las presentaciones agregadas
+        const presentations = [];
+        document.querySelectorAll('input[name="presentation[]"]').forEach(input => {
+            if (input.value && input.value.trim() !== "") {
+                presentations.push(input.value.trim());
+            }
+        });
+        formEntries.presentation = presentations; // Asignar todas las presentaciones al objeto
+
         const category = document.getElementById('categorySelect').value;
-        formEntries.category = String(category);
+        if (category) {
+            formEntries.category = String(category);
+        } else {
+            alert('La categoría es requerida');
+            return;
+        }
 
         const productIdInput = form.querySelector('[id^="product_id_"]');
         if (productIdInput) {
@@ -499,13 +524,7 @@ document.querySelectorAll('#fichaAlimentosForm, #fichaRopaForm, #fichaAccesorios
             return;
         }
 
-        // Verifica que la categoría esté presente antes de enviar
-        if (!formEntries.category) {
-            alert('Error: Categoría no definida');
-            return;
-        }
-
-        console.log('Datos a enviar:', formEntries);
+        console.log('Datos a enviar:', formEntries);  // Asegúrate de revisar esto en la consola
 
         fetch(`http://localhost:8080/api/products/fichaTecnica`, {
             method: 'POST',
@@ -520,14 +539,11 @@ document.querySelectorAll('#fichaAlimentosForm, #fichaRopaForm, #fichaAccesorios
             }
             return response.json();
         })
-        .then(data => {
-            if (!data.category) {
-                console.error('Categoría no presente en la respuesta:', data);
-                alert('Error: La categoría no está presente en la respuesta del servidor');
-            } else {
-                alert('Ficha técnica creada exitosamente');
-                console.log('Ficha técnica creada:', data);
-            }
+        .then(() => {
+            // Mostrar los datos que fueron enviados (formEntries) en lugar de los datos devueltos
+            alert('Ficha técnica creada exitosamente con los siguientes datos:');
+            console.log('Ficha técnica creada con los siguientes datos:', formEntries);
+            alert(JSON.stringify(formEntries, null, 2));  // Muestra los datos enviados en formato legible
         })
         .catch(error => {
             console.error('Error al crear la ficha técnica:', error.message);
@@ -535,6 +551,8 @@ document.querySelectorAll('#fichaAlimentosForm, #fichaRopaForm, #fichaAccesorios
         });
     });
 });
+
+
 
 
 
@@ -562,6 +580,33 @@ document.getElementById('retail_price').addEventListener('input', function(e) {
     // Reunir la parte entera y la parte decimal si existe
     e.target.value = decimalPart !== undefined ? `${integerPart}.${decimalPart}` : integerPart;
 });
+
+let presentationCountAlimentos = 1;
+
+function addPresentationFieldAlimentos() {
+    if (presentationCountAlimentos < 5) {
+        const container = document.getElementById('presentationsContainerAlimentos');
+        const newField = document.createElement('div');
+        newField.classList.add('input-group', 'mb-3');
+        newField.innerHTML = `
+            <input type="text" class="form-control" name="presentation[]" placeholder="Presentación (e.g., 15kg)">
+            <button class="btn btn-danger" type="button" onclick="removePresentationFieldAlimentos(this)">Eliminar</button>
+        `;
+        container.appendChild(newField);
+        presentationCountAlimentos++;
+    } else {
+        alert('Solo puedes agregar hasta 5 presentaciones.');
+    }
+}
+
+function removePresentationFieldAlimentos(button) {
+    const container = document.getElementById('presentationsContainerAlimentos');
+    container.removeChild(button.parentElement);
+    presentationCountAlimentos--;
+}
+
+
+
 </script>
 
 </body>
