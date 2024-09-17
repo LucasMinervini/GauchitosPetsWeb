@@ -92,6 +92,137 @@ CSS STRUCTURE:
 /* Alinea las direcciones a la izquierda */
 
 /* Custom styles for carousel indicators and controls */
+.product-card {
+  width: 100%;
+  min-height: 400px; /* Establece una altura mínima para las tarjetas */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Añadir sombra a las tarjetas */
+  
+}
+
+
+/* Ajustar el tamaño de las imágenes de los productos */
+.product-card img {
+  width: 200px; /* Ancho fijo para todas las imágenes */
+  height: 200px; /* Altura fija para mantener proporción */
+  object-fit: contain; /* Asegura que la imagen se ajuste sin deformarse */
+}
+
+/* Ajustar texto y espaciado en las tarjetas */
+.product-card h3, .product-card h5 {
+text-align: center; /* Centra el texto */
+font-size: 1.2rem;
+margin-bottom: 10px;
+font-family: "Oswald", sans-serif;
+}
+.product-card h5 {
+font-size: 1rem;
+color: #7a7a7a; /* Color más tenue para el subtítulo */
+}
+/* Mantener las tarjetas con un layout consistente */
+.card {
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+height: 100%; /* Mantener la altura consistente entre tarjetas */
+}
+
+.card-body h3, .card-body h5 {
+white-space: normal;  /* Permitir que el texto se ajuste a varias líneas */
+overflow: visible;
+text-overflow: unset;
+}
+.bestselling-title {
+  font-size: 3rem;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(90deg, #f9d423, #ff4e50); /* Degradado en tonos cálidos */
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.bestselling-title::before {
+  content: "🔥 ";
+  font-size: 2rem;
+}
+
+.bestselling-title::after {
+  content: " 💎";
+  font-size: 2rem;
+}
+
+.section-header {
+  justify-content: center;
+  align-items: center;
+}
+
+.clothing-title {
+  font-size: 3rem;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(90deg, #a1c4fd, #c2e9fb); /* Degradado suave en tonos azules */
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.clothing-title::before {
+  content: "🐾 ";
+  font-size: 2rem;
+}
+
+.clothing-title::after {
+  content: " 👕";
+  font-size: 2rem;
+}
+
+.section-header {
+  justify-content: center;
+  align-items: center;
+}
+
+.promo-title {
+  font-size: 3rem;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(90deg, #ffafbd, #ffc3a0); /* Degradado suave */
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.promo-title::before {
+  content: "💥 ";
+  font-size: 2rem;
+}
+
+.promo-title::after {
+  content: " 🎉";
+  font-size: 2rem;
+}
+
+.section-header {
+  justify-content: center;
+  align-items: center;
+}
+
 .testimonial-title {
   font-size: 2.5rem;
   font-weight: bold;
@@ -245,7 +376,15 @@ a.text-decoration-none {
 }
 header{
   background-color: rgb(236, 222, 195);
+  
 }
+.main-logo img {
+  width: 80px; /* Ajusta el tamaño del logo */
+  height: auto; /* Mantiene la proporción */
+  display: inline-block;
+  margin-right: 20px; /* Añade espacio entre el logo y el siguiente elemento */
+}
+
 #banner {
   width: 100%;
   height: 100vh; /* Full viewport height */

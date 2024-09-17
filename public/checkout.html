@@ -191,7 +191,7 @@
                     listItem.className = 'list-group-item d-flex justify-content-between';
                     listItem.innerHTML = `
                         <span>${item.name} x${item.quantity}</span>
-                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)} ${item.weight}</span>
                     `;
                     cartItemsContainer.appendChild(listItem);
                     total += item.price * item.quantity;
@@ -244,7 +244,8 @@
                         orderData.items.push({
                             title: item.name,
                             unit_price: unitPrice,
-                            quantity: Number(item.quantity)
+                            quantity: Number(item.quantity),
+                            weight: item.weight
                         });
                     });
             
@@ -254,7 +255,7 @@
                     });
             
                     // Enviar solicitud para crear la preferencia de pago
-                    fetch('http://localhost:8080/api/products/create_preference', {
+                    fetch('/api/products/create_preference', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

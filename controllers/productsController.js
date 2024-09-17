@@ -4,7 +4,9 @@ const crypto = require('crypto');
 const z = require('zod');
 const { validateProd } = require('../schema/product.js'); 
 const { ValidatePartialProd } = require('../schema/product.js');
-const mercadopago = require('mercadopago'); // Asegúrate de requerir Mercado Pago
+const mercadopago = require('mercadopago'); 
+const bcrypt = require('bcrypt');
+
 
 
 // Configura el Access Token
@@ -29,9 +31,9 @@ const createPreference = (req, res) => {
   mercadopago.preferences.create({
       items: items,  // Aquí se envían los detalles de cada producto
       back_urls: {
-          success: "http://localhost:8080/feedback",
-          failure: "http://localhost:8080/feedback",
-          pending: "http://localhost:8080/feedback"
+          success: "http://localhost:1234/api/feedback",
+          failure: "http://localhost:1234/api/feedback",
+          pending: "http://localhost:1234/api/feedback"
       },
       auto_return: "approved",
   })
@@ -45,25 +47,295 @@ const createPreference = (req, res) => {
 };
 
 
+
+
+
+const handlePaymentFeedback = (req, res) => {
+  const { payment_id, status, merchant_order_id } = req.query; // parámetros recibidos de MercadoPago
+
+  if (!payment_id || !merchant_order_id) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  if (status === 'approved') {
+    // Actualiza el estado de la orden en la base de datos
+    const updateOrderStatusQuery = "UPDATE orders SET status = 'completed' WHERE id = ?";
+    
+    db.query(updateOrderStatusQuery, [merchant_order_id], (err, result) => {
+      if (err) {
+        return res.status(500).send('Error al actualizar el estado de la orden');
+      }
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Pago Exitoso</title>
+          <script>
+            alert("¡El pago se ha realizado con éxito!");
+            setTimeout(function(){
+              window.location.href = "/index.html"; // Redirigir después de 3 segundos
+            }, 3000);
+          </script>
+        </head>
+        <body>
+          <h1>Pago Exitoso</h1>
+          <p>Redirigiendo a la página principal...</p>
+        </body>
+        </html>
+      `);
+    });
+  } else {
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pago Fallido</title>
+        <script>
+          alert("El pago no se pudo completar. Por favor, intente nuevamente.");
+          setTimeout(function(){
+            window.location.href = "/checkout.html"; // Redirigir a checkout después de 3 segundos
+          }, 3000);
+        </script>
+      </head>
+      <body>
+        <h1>Pago Fallido</h1>
+        <p>Redirigiendo a la página principal...</p>
+      </body>
+      </html>
+    `);
+  }
+};
+
+
+
+//Registar usuario
+
+const registerUser = (req, res) =>{
+  const { email, password, name, address, phone } = req.body;
+  
+
+  if (!email || !password || !name) {
+    return res.status(400).send('Email, password, and name are required');
+  }
+
+  bcrypt.hash(password, 10, (err, hash) => {
+    if (err) {
+      console.error('Error hashing password:', err);
+      return res.status(500).send('Error hashing password');
+    }
+
+    const query = `
+      INSERT INTO users (email, password, name, address, phone, user_type_id) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    
+    const user_type_id = 1;
+
+    db.query(query, [email, hash, name, address, phone, user_type_id], (err, results) => {
+      if (err) {
+        console.error('Error inserting user:', err);
+        return res.status(500).send('Server error');
+      }
+
+      // Redirigir al usuario a la página de inicio
+      res.status(200).json({ message: 'User registered successfully', redirectUrl: '/index.html' });
+    });
+  });
+}
+
+
+// Login Usuario
+const loginUser = (req, res) => {
+  const { email, password } = req.body;
+  
+  const query = 'SELECT * FROM users WHERE email = ?';
+  db.query(query, [email], (err, results) => {
+    if (err) {
+      return res.status(500).send('Server error');
+    }
+    if (results.length === 0) {
+      return res.status(400).send('User not found');
+    }
+
+    const user = results[0];
+    
+    // Comparar contraseñas
+    bcrypt.compare(password, user.password, (err, match) => {
+      if (err) {
+        return res.status(500).send('Error comparing passwords');
+      }
+      if (!match) {
+        return res.status(400).send('Incorrect password');
+      }
+
+      // Guardar la información del usuario en la sesión
+      req.session.userId = user.id;
+      req.session.email = user.email;
+      req.session.name = user.name;
+
+      // Buscar si hay una orden pendiente
+      const orderQuery = 'SELECT * FROM orders WHERE user_id = ? AND status = "pending"';
+      db.query(orderQuery, [user.id], (err, orderResult) => {
+        if (err) {
+          return res.status(500).send('Error al buscar la orden');
+        }
+
+        // Si hay una orden pendiente, retornarla
+        if (orderResult.length > 0) {
+          const pendingOrder = orderResult[0];
+          res.json({ message: 'Login exitoso', userId: user.id, pendingOrder });
+        } else {
+          res.json({ message: 'Login exitoso', userId: user.id });
+        }
+      });
+    });
+  });
+};
+
+// add- to order
+const addToOrder = (req, res) => {
+  const { productId, quantity } = req.body;
+  let orderId;
+
+  if (req.session && req.session.userId) {
+    const userId = req.session.userId;
+
+    // Verificar si el usuario tiene una orden pendiente
+    const query = 'SELECT * FROM orders WHERE user_id = ? AND status = "pending"';
+    db.query(query, [userId], (err, result) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error al recuperar la orden' });
+      }
+
+      if (result.length > 0) {
+        // Orden pendiente encontrada, usar el orderId existente
+        orderId = result[0].id;
+        insertOrderItem(orderId);
+      } else {
+        // No hay orden pendiente, crear una nueva
+        const newOrderQuery = 'INSERT INTO orders (user_id, status) VALUES (?, "pending")';
+        db.query(newOrderQuery, [userId], (err, newOrderResult) => {
+          if (err) {
+            return res.status(500).json({ message: 'Error al crear la nueva orden' });
+          }
+
+          orderId = newOrderResult.insertId;
+          req.session.orderId = orderId; // Guardar en sesión
+          insertOrderItem(orderId);
+        });
+      }
+    });
+  } else {
+    return res.status(401).json({ message: 'Usuario no autenticado' });
+  }
+
+  function insertOrderItem(orderId) {
+    const orderItemQuery = 'INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)';
+    db.query(orderItemQuery, [orderId, productId, quantity], (err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error al agregar producto a la orden' });
+      }
+      res.status(200).json({ message: 'Producto agregado a la orden', orderId });
+    });
+  }
+};
+
+//completar comprar
+const completePurchase = async (req, res) => {
+  const { items, total, customerInfo } = req.body;
+  let userId;
+
+  try {
+      // Verificar si el usuario está logueado
+      if (req.session && req.session.userId) {
+          // Usuario logueado, usar su ID
+          userId = req.session.userId;
+      } else {
+          // Usuario no logueado, insertar como nuevo cliente en la tabla users
+          const insertCustomerQuery = 'INSERT INTO users (name, email) VALUES (?, ?)';
+          const [customerResult] = await db.promise().query(insertCustomerQuery, [customerInfo.name, customerInfo.email]);
+          userId = customerResult.insertId;  // Usar este ID como user_id en la tabla orders
+      }
+
+      // Insertar la orden
+      const insertOrderQuery = 'INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, ?)';
+      const [orderResult] = await db.promise().query(insertOrderQuery, [userId, total, 'Success']);
+      const orderId = orderResult.insertId;
+
+      // Insertar los items de la orden
+      const insertOrderItemsQuery = 'INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES ?';
+      const orderItemsData = items.map(item => [orderId, item.id, item.name, item.quantity, item.price]);
+
+      await db.promise().query(insertOrderItemsQuery, [orderItemsData]);
+
+      // Respuesta exitosa
+      res.status(201).json({ message: 'Compra realizada con éxito', orderId });
+  } catch (err) {
+      console.error('Error al procesar la compra:', err);
+      res.status(500).json({ message: 'Error al procesar la compra' });
+  }
+};
+
+
+// LogOut
+const logOutUser = (req,res) =>{
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).send('Error logging out');
+    }
+    res.redirect('/');
+  });
+}
+
+
+// Obtener informacion de la cuenta
+const getAccountInfo = (req, res) => {
+  const query = 'SELECT name, email, address, phone, user_type_id FROM users WHERE id = ?';
+  db.query(query, [req.session.userId], (err, results) => {
+      if (err) {
+          console.error('Error fetching account info:', err);
+          return res.status(500).send('Server error');
+      }
+      if (results.length === 0) {
+          return res.status(404).send('User not found');
+      }
+
+      const user = results[0];
+      res.json({
+          name: user.name,
+          email: user.email,
+          address: user.address,
+          phone: user.phone,
+          user_type_id: user.user_type_id
+      });
+  });
+};
+
+
+// CREAR PRODUCTO
 const createProduct = (req, res) => {
-  console.log('Datos recibidos:', req.body);
+  
 
-  const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id } = req.body;
+  const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id, weight } = req.body;
 
-  console.log("Categoría recibida antes de validación:", category);
+  
   const validCategories = ['alimentos', 'ropa', 'accesorios'];
   if (!validCategories.includes(category)) {
       return res.status(400).json({ error: 'Categoría no válida' });
   }
 
-  const result = validateProd({ name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id });
+  const result = validateProd({ name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id, weight });
 
   if (!result.success) {
       return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
 
   let categoryIds = req.body.category_id;
-console.log('Category IDs before validation:', categoryIds);
+    
 
 try {
     if (typeof categoryIds === 'string') {
@@ -86,7 +358,7 @@ try {
         .flat()
         .filter(Number.isInteger);
 
-    console.log("Validated Category IDs:", categoryIds);
+    
 
 } catch (error) {
     console.error('Error processing category IDs:', error.message);
@@ -109,11 +381,12 @@ try {
 
       const newId = crypto.randomUUID();
       const insertProductQuery = `
-          INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_url) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
+    INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_url, weight) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
-      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, concatenatedImageUrls], (err, results) => {
+      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, concatenatedImageUrls, weight], (err, results) => {
+        console.log(results);
           if (err) {
               console.error('Error executing query:', err);
               return res.status(500).send('Error executing query');
@@ -231,6 +504,7 @@ const getCategory = (req, res) => {
       p.created_at,
       p.updated_at,
       p.image_url,
+      p.weight,
       GROUP_CONCAT(pc.category_id) AS category_ids
     FROM products p
     JOIN product_categories pc ON p.id = pc.product_id
@@ -314,7 +588,8 @@ const getDetailsById = (req, res) => {
       retail_price, 
       description, 
       image_url, 
-      name 
+      name,
+      weight
     FROM 
       products 
     WHERE 
@@ -344,9 +619,22 @@ const getFichaTecnica = (req, res) => {
   const productId = req.params.id;
 
   const query = `
-    SELECT category, product_id, brand, nutritional_info, expiry_date, age, pet_size, medicated_food, presentation, flavor, material, size, dimensions
+    SELECT 
+      category,
+      product_id,
+      brand,
+      nutritional_info,
+      expiry_date,
+      age,
+      pet_size,
+      medicated_food,
+      flavor,
+       material,
+       size,
+       dimensions
     FROM product_technical_details
-    WHERE product_id = ?`;
+    WHERE product_id = ?
+    LIMIT 1;`
 
   db.query(query, [productId], (error, results) => {
       if (error) {
@@ -355,14 +643,27 @@ const getFichaTecnica = (req, res) => {
       if (results.length === 0) {
           return res.status(404).json({ message: 'Ficha técnica no encontrada' });
       }
-      res.json(results[0]);  // Devuelve los detalles técnicos como JSON
+      let fichaTecnica = results[0];  // Devuelve los detalles técnicos como JSON
+
+      // Get presentations if exists
+      const presentationQuery = `
+      SELECT *
+      FROM product_presentations
+      WHERE product_id = ?;`
+      db.query(presentationQuery, [productId], (error, presentations) => {
+        if (error) {
+            return res.status(500).send(error);
+        }
+        fichaTecnica.presentations =  presentations ?? [];
+        res.json(fichaTecnica);  // Devuelve los detalles técnicos como JSON
+      });
   });
 }
 
 
 // Controlador para crear una ficha técnica según la categoría del producto
 const createFichaTecnica = (req, res) => {
-  console.log(req.body); // Esto te mostrará los datos recibidos del cliente
+  
 
   const {
     category,
@@ -395,8 +696,8 @@ const createFichaTecnica = (req, res) => {
   // Agregar campos según la categoría
   switch (category.toLowerCase().trim()) {
     case 'alimentos':
-      insertQuery += ', nutritional_info, expiry_date, age, pet_size, medicated_food, material, size, dimensions';
-      queryParams.push(nutritional_info, expiry_date, age, pet_size, medicated_food, material, size, dimensions);
+      insertQuery += ', nutritional_info, expiry_date, age, pet_size, medicated_food, material, size, dimensions, flavor';
+      queryParams.push(nutritional_info, expiry_date, age, pet_size, medicated_food, material, size, dimensions, flavor);
       break;
     case 'ropa':
       insertQuery += ', material, size';
@@ -410,7 +711,7 @@ const createFichaTecnica = (req, res) => {
       return res.status(400).send('Categoría de producto no reconocida');
   }
 
-  insertQuery += ') VALUES (?, ?, ?' + ', ?'.repeat(queryParams.length - 3) + ')';
+  insertQuery += ') VALUES (?, ?, ?, ?' + ', ?'.repeat(queryParams.length - 4) + ')';
 
   // Ejecutar la consulta de inserción principal
   db.query(insertQuery, queryParams, (err, results) => {
@@ -470,107 +771,128 @@ const createFichaTecnica = (req, res) => {
   });
 };
 
-
-
-
-
-
-
-
-
-
-//UPDATE de producto
+//Actualizar producto
 const updateProduct = (req, res) => {
-
-  // Validar la entrada parcial del producto
   const result = ValidatePartialProd(req.body);
 
   if (!result.success) {
     return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
   }
-  
-  const { id } = req.params; // ID del producto
+
+  const { id } = req.params;
   const updates = req.body;
 
-  // Verificar que haya campos para actualizar
-  if (Object.keys(updates).length === 0) {
-    return res.status(400).json({ error: 'No se proporcionaron campos para actualizar' });
+  // Verificar que haya campos para actualizar o un archivo de imagen principal
+  if (Object.keys(updates).length === 0 && !req.file) {
+    return res.status(400).json({ error: 'No se proporcionaron campos para actualizar ni una nueva imagen' });
   }
 
-  // Procesar campos de actualización
-  const fields = Object.keys(updates).filter(key => key !== 'category_id').map(key => `${key} = ?`).join(', ');
-  const values = Object.values(updates).filter(value => !Array.isArray(value));
+  let fields = Object.keys(updates).filter(key => key !== 'category_id').map(key => `${key} = ?`);
+  let values = Object.values(updates).filter(value => !Array.isArray(value));
 
-  // Iniciar la transacción
-  db.beginTransaction(err => {
-    if (err) {
-      console.error('Error iniciando la transacción:', err);
-      return res.status(500).send('Error iniciando la transacción');
-    }
-
-    const updateQuery = `
-        UPDATE products 
-        SET ${fields}
-        WHERE id = ?
-    `;
-
-    db.query(updateQuery, [...values, id], (err, results) => {
+  // Si se proporciona una nueva imagen principal, modificar solo la primera URL de la lista de imágenes
+  if (req.file) {
+    console.log('Imagen recibida:', req.file);
+    
+    // Obtener las imágenes actuales del producto
+    db.query('SELECT image_url FROM products WHERE id = ?', [id], (err, results) => {
       if (err) {
-        return db.rollback(() => {
-          console.error('Error ejecutando la consulta de actualización:', err);
-          res.status(500).send('Error ejecutando la consulta');
-        });
+        console.error('Error obteniendo las imágenes del producto:', err);
+        return res.status(500).send('Error obteniendo las imágenes del producto');
       }
 
-      // Si el campo category_id está presente y es un array, actualizarlo
-      if (updates.category_id && Array.isArray(updates.category_id)) {
-        const deleteQuery = `DELETE FROM product_categories WHERE product_id = ?`;
-        const insertQuery = `INSERT INTO product_categories (product_id, category_id) VALUES ?`;
-        const categoryValues = updates.category_id.map(catId => [id, catId]);
+      let currentImages = results[0].image_url.split(','); // Suponiendo que las imágenes están separadas por comas
+      currentImages[0] = `images/${req.file.filename}`; // Modificar solo la primera imagen
 
-        db.query(deleteQuery, [id], (err) => {
-          if (err) {
-            return db.rollback(() => {
-              console.error('Error al eliminar categorías anteriores:', err);
-              res.status(500).send('Error eliminando categorías anteriores');
-            });
-          }
+      // Unir las imágenes modificadas de nuevo en una cadena
+      const updatedImages = currentImages.join(',');
 
-          db.query(insertQuery, [categoryValues], (err) => {
+      // Guardar el array modificado de imágenes
+      fields.push('image_url = ?');
+      values.push(updatedImages);
+
+      // Continuar con la actualización del producto
+      executeUpdate(fields,values);
+    });
+  } else {
+    // Si no se está actualizando la imagen, solo continuar con la actualización
+    executeUpdate(fields,values);
+  }
+
+  // Función para ejecutar la consulta de actualización
+  function executeUpdate(fields,values) {
+    // Iniciar la transacción en la base de datos
+    db.beginTransaction(err => {
+      if (err) {
+        console.error('Error iniciando la transacción:', err);
+        return res.status(500).send('Error iniciando la transacción');
+      }
+
+      const updateQuery = `UPDATE products SET ${fields.join(', ')} WHERE id = ?`;
+
+      db.query(updateQuery, [...values, id], (err, results) => {
+        if (err) {
+          return db.rollback(() => {
+            console.error('Error ejecutando la consulta de actualización:', err);
+            res.status(500).send('Error ejecutando la consulta');
+          });
+        }
+
+        console.log('Producto actualizado, ID:', id);
+
+        if (updates.category_id && Array.isArray(updates.category_id)) {
+          const deleteQuery = `DELETE FROM product_categories WHERE product_id = ?`;
+          const insertQuery = `INSERT INTO product_categories (product_id, category_id) VALUES ?`;
+          const categoryValues = updates.category_id.map(catId => [id, catId]);
+
+          db.query(deleteQuery, [id], (err) => {
             if (err) {
               return db.rollback(() => {
-                console.error('Error al insertar nuevas categorías:', err);
-                res.status(500).send('Error insertando nuevas categorías');
+                console.error('Error al eliminar categorías anteriores:', err);
+                res.status(500).send('Error eliminando categorías anteriores');
               });
             }
 
-            db.commit(err => {
+            db.query(insertQuery, [categoryValues], (err) => {
               if (err) {
                 return db.rollback(() => {
-                  console.error('Error al confirmar la transacción:', err);
-                  res.status(500).send('Error confirmando la transacción');
+                  console.error('Error al insertar nuevas categorías:', err);
+                  res.status(500).send('Error insertando nuevas categorías');
                 });
               }
 
-              res.status(200).json({ message: 'Producto actualizado exitosamente, incluyendo categorías' });
+              db.commit(err => {
+                if (err) {
+                  return db.rollback(() => {
+                    console.error('Error al confirmar la transacción:', err);
+                    res.status(500).send('Error confirmando la transacción');
+                  });
+                }
+
+                console.log('Producto actualizado con categorías y imagen');
+                res.status(200).json({ message: 'Producto actualizado exitosamente, incluyendo categorías y imagen' });
+              });
             });
           });
-        });
-      } else {
-        db.commit(err => {
-          if (err) {
-            return db.rollback(() => {
-              console.error('Error al confirmar la transacción:', err);
-              res.status(500).send('Error confirmando la transacción');
-            });
-          }
+        } else {
+          db.commit(err => {
+            if (err) {
+              return db.rollback(() => {
+                console.error('Error al confirmar la transacción:', err);
+                res.status(500).send('Error confirmando la transacción');
+              });
+            }
 
-          res.status(200).json({ message: 'Producto actualizado exitosamente' });
-        });
-      }
+            console.log('Producto actualizado sin categorías');
+            res.status(200).json({ message: 'Producto actualizado exitosamente, incluyendo imagen' });
+          });
+        }
+      });
     });
-  });
+  }
 };
+
+
 
 
 
@@ -590,6 +912,19 @@ const deleteProductById = (req, res) => {
     res.status(200).send({ id });
   });
 };
+
+
+//Verificar si esta logeado
+const checkLogin = (req,res) =>{
+  if (req.session && req.session.userId) {
+    // Si existe una sesión con userId, el usuario está logueado
+    res.json({ loggedIn: true });
+    } else {
+    // Si no hay sesión, el usuario no está logueado
+    res.json({ loggedIn: false });
+   }
+}
+
 //Insertar order
 const createOrder = async (req, res) => {
   const { userId, cartItems, totalAmount } = req.body;
@@ -604,7 +939,7 @@ const createOrder = async (req, res) => {
       `;
       
       const orderResult = await new Promise((resolve, reject) => {
-          db.query(orderQuery, [userId, totalAmount, 'pending'], (err, result) => {
+          db.promise().query(orderQuery, [userId, totalAmount, 'pending'], (err, result) => {
               if (err) {
                   console.error('Error al crear la orden:', err);
                   return reject(err);
@@ -643,6 +978,8 @@ const createOrder = async (req, res) => {
 };
 
 
+
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -656,5 +993,13 @@ module.exports = {
   createPreference,
   getDetailsById,
   getFichaTecnica,
-  createFichaTecnica
+  createFichaTecnica,
+  loginUser,
+  getAccountInfo,
+  registerUser,
+  addToOrder,
+  completePurchase,
+  handlePaymentFeedback,
+  logOutUser,
+  checkLogin
 };

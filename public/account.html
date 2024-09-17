@@ -177,7 +177,7 @@
         <a href="/logout">Cerrar sesión</a>
     </div>
 <script> // Fetch user account info from the server
-  fetch('/account-info')
+  fetch('/api/account-info')
       .then(response => response.json())
       .then(data => {
           document.getElementById('user-name').textContent = data.name;

@@ -325,10 +325,12 @@
               </div>
               
               <div class="product-options">
-                <label for="product-presentation-alimentos">Presentaciones:</label>
-                <select id="product-presentation-alimentos" class="form-control">
-                       <!-- Las opciones serán añadidas dinámicamente por JavaScript -->
-                 </select>
+                <label for="product-weight">Peso del Producto: </label>
+                <h3 id="product-weight">Peso no disponible</h3>
+                
+
+                      
+                
 
                   
                   <label for="product-quantity" class="mt-3">Cantidad</label>
@@ -357,11 +359,6 @@
          <li><strong>Tamaño de la Mascota:</strong> <span id="pet-size-alimentos"></span></li>
          <li><strong>Alimento Medicado:</strong> <span id="medicated-food-alimentos"></span></li>
          <li><strong>Fecha De Expiración:</strong> <span id="product-expiry-date-alimentos"></span></li>
-         <li><strong>Presentaciones:</strong> 
-        <select id="product-presentation-alimentos" class="form-control">
-            <!-- Las opciones serán añadidas dinámicamente -->
-        </select>
-    </li>
     <li><strong>Sabor:</strong> <span id="product-flavor-alimentos"></span></li>
   </ul>
 
@@ -511,7 +508,7 @@
             li.innerHTML = `
                 <div class="d-flex align-items-center">
                     <button class="btn btn-sm btn-outline-secondary btn-decrease" data-index="${index}">-</button>
-                    <span class="mx-2">${item.name} x${item.quantity}</span>
+                    <span class="mx-2">${item.name} x${item.quantity} (${item.weight})</span>
                     <button class="btn btn-sm btn-outline-secondary btn-increase" data-index="${index}">+</button>
                 </div>
                 <span>$${(item.price * item.quantity).toFixed(2)}</span>
@@ -526,7 +523,7 @@
     }
     updateCartUI();
 
-    function addToCart(productId, productName, productPrice) {
+    function addToCart(productId, productName, productPrice, producTWeight) {
         const quantityInput = document.getElementById('product-quantity');
         const quantity = parseInt(quantityInput.value); // Obtener la cantidad ingresada por el cliente
     
@@ -534,7 +531,8 @@
             id: productId,
             name: productName,
             price: parseFloat(productPrice),
-            quantity: quantity // Usar la cantidad seleccionada
+            quantity: quantity,
+            weight: producTWeight
         };
     
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -626,8 +624,8 @@
         const productId = urlParams.get('id');
 
         if (productId) {
-            const productApiUrl = `http://localhost:8080/api/products/details/${productId}`;
-            const fichaTecnicaApiUrl = `http://localhost:8080/api/products/fichaTecnica/${productId}`;
+            const productApiUrl = `/api/products/details/${productId}`;
+            const fichaTecnicaApiUrl = `/api/products/fichaTecnica/${productId}`;
 
             loadSingleProduct(productApiUrl);
             loadFichaTecnica(fichaTecnicaApiUrl);
@@ -647,20 +645,24 @@
                     document.getElementById('product-name').textContent = 'Producto no encontrado';
                     document.getElementById('product-price').textContent = 'Precio no disponible';
                     document.getElementById('product-description').textContent = 'Descripción no disponible';
+                    document.getElementById('product-weight').textContent = 'Peso no disponible';
                     return;
                 }
-
+    
                 // Mostrar los detalles del producto
                 document.getElementById('product-name').textContent = product.name;
                 document.getElementById('product-price').textContent = product.retail_price
                     ? `$${parseFloat(product.retail_price).toFixed(2)}`
                     : 'Precio no disponible';
                 document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
-
+    
+                // Mostrar el peso del producto
+                document.getElementById('product-weight').textContent = product.weight + 'KG' || 'Peso no disponible'; 
+    
                 // Mostrar imágenes
                 const imageUrls = product.image_url.split(',');
                 document.getElementById('product-image').src = imageUrls[0] || 'default-image.png';
-
+    
                 const gallery = document.getElementById('product-gallery');
                 gallery.innerHTML = '';
                 imageUrls.forEach(url => {
@@ -670,20 +672,21 @@
                     imgElement.addEventListener('click', () => changeMainImage(url));
                     gallery.appendChild(imgElement);
                 });
-
+    
                 // Crear botón de "Agregar al carrito"
                 document.getElementById('product-actions').innerHTML = `
                     <button class="btn btn-primary btn-add-to-cart mt-3" 
                         data-product-id="${product.id}" 
                         data-product-name="${product.name}" 
-                        data-product-price="${product.retail_price}">
+                        data-product-price="${product.retail_price}"
+                        data-product-weight="${product.weight}">
                         Agregar al carrito
                     </button>
                 `;
-
+    
                 // Asignar evento al botón
                 document.querySelector('.btn-add-to-cart').addEventListener('click', function () {
-                    addToCart(product.id, product.name, product.retail_price);
+                    addToCart(product.id, product.name, product.retail_price, product.weight);
                 });
             })
             .catch(error => {
@@ -691,6 +694,7 @@
                 document.getElementById('product-name').textContent = 'Error al cargar el producto';
             });
     }
+    
 
     function loadFichaTecnica(apiUrl) {
         fetch(apiUrl)
@@ -699,7 +703,7 @@
                 return response.json();
             })
             .then(details => {
-                if (details.category === 'alimentos') {
+                 
                     // Mostrar la ficha técnica para alimentos
                     document.getElementById('ficha-alimentos').style.display = 'block';
                     
@@ -708,53 +712,17 @@
                     document.getElementById('product-brand-alimentos').textContent = details.brand || 'No disponible';
                     document.getElementById('pet-size-alimentos').textContent = details.pet_size || 'No disponible';
                     document.getElementById('medicated-food-alimentos').textContent = details.medicated_food ? 'Sí' : 'No';
-                    document.getElementById('product-expiry-date-alimentos').textContent = details.expiry_date || 'No disponible'; // Mostrar la fecha de expiración
                     document.getElementById('product-flavor-alimentos').textContent = details.flavor || 'No disponible';
-    
-                    // Poblar las presentaciones en el select
-                       const presentationSelect = document.getElementById('product-presentation-alimentos');
-                       presentationSelect.innerHTML = ''; // Limpiar opciones actuales
-
-                       if (details.presentations && details.presentations.length > 0) {
-                               details.presentations.forEach(presentation => {
-                                 const option = document.createElement('option');
-                                 option.value = presentation;
-                                 option.textContent = presentation;
-                             presentationSelect.appendChild(option);
-                                            });
-                    } else {
-                        presentationSelect.innerHTML = '<option>No disponible</option>';
-                    }
-
-                }
             })
             .catch(error => {
                 console.error('Error al obtener la ficha técnica:', error.message);
             });
     }
-    
-    function formatDate(isoDate) {
-        const date = new Date(isoDate);
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Los meses empiezan desde 0
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-    
-    // Asignar la fecha formateada al campo
-    document.getElementById('product-expiry-date-alimentos').textContent = formatDate(details.expiry_date);
 
     // Cambiar imagen principal al hacer clic en las miniaturas
     function changeMainImage(src) {
         document.getElementById('product-image').src = src;
     }
 </script>
-
-
-
-
-
-  
-
 </body>
 </html>

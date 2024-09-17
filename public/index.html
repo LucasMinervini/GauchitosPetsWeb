@@ -22,9 +22,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chilanka&family=Montserrat:wght@300;400;500&display=swap"
-  rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Chilanka&family=Montserrat:wght@300;400;500&display=swap"rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
 </head>
 
@@ -387,36 +386,38 @@
 
 
 
-  <section id="clothing" class="my-5 overflow-hidden">
-    <div class="container pb-5">
+<section id="clothing" class="my-5 overflow-hidden">
+  <div class="container pb-5">
       <div class="section-header d-md-flex justify-content-between align-items-center mb-3">
-        <h2 class="display-3 fw-normal">Ropa de Mascotas</h2>
-        <div>
-          <a href="#" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
-            Comprar ahora
-            <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
-              <use xlink:href="#arrow-right"></use>
-            </svg></a>
-        </div>
+          <h2 class="display-3 fw-normal clothing-title">🐾 Ropa de Mascotas 👕</h2>
+          <div>
+              <a href="#" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+                  Comprar ahora
+                  <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+                      <use xlink:href="#arrow-right"></use>
+                  </svg>
+              </a>
+          </div>
       </div>
-  
+
       <div class="products-carousel swiper">
-        <div class="swiper-wrapper" id="products-carousel">
-          <!-- Los productos se insertarán aquí dinámicamente -->
-        </div>
+          <div class="swiper-wrapper" id="products-carousel">
+              <!-- Los productos se insertarán aquí dinámicamente -->
+          </div>
       </div>
       <!-- / products-carousel -->
-    </div>
-  </section>
+  </div>
+</section>
+
   
 
   <section id="foodies" class="my-5">
     <div class="container my-5 py-5">
         <div class="section-header d-md-flex justify-content-between align-items-center">
-            <h2 class="display-3 fw-normal">Promos</h2>
+            <h2 class="display-3 fw-normal promo-title">🎉 Tenemos Ofertas ! 💥</h2>
             <div class="mb-4 mb-md-0">
                 <p class="m-0">
-                    
+                    <!-- Puedes agregar alguna descripción corta aquí si lo necesitas -->
                 </p>
             </div>
             <div>
@@ -448,6 +449,7 @@
         </div>
     </div>
 </section>
+
 
 
 
@@ -604,28 +606,30 @@
 
 
 
-  <section id="bestselling" class="my-5 overflow-hidden">
-    <div class="container py-5 mb-5">
-  
+<section id="bestselling" class="my-5 overflow-hidden">
+  <div class="container py-5 mb-5">
+
       <div class="section-header d-md-flex justify-content-between align-items-center mb-3">
-        <h2 class="display-3 fw-normal">Productos más vendidos</h2>
-        <div>
-          <a href="#" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
-            Comprar ahora
-            <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
-              <use xlink:href="#arrow-right"></use>
-            </svg></a>
-        </div>
+          <h2 class="display-3 fw-normal bestselling-title">🔥 Productos más vendidos 💎</h2>
+          <div>
+              <a href="#" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+                  Comprar ahora
+                  <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+                      <use xlink:href="#arrow-right"></use>
+                  </svg>
+              </a>
+          </div>
       </div>
-  
+
       <div class="swiper bestselling-swiper">
-        <div class="swiper-wrapper" id="bestselling-products">
-          <!-- Aquí se agregarán los productos dinámicamente -->
-        </div>
+          <div class="swiper-wrapper" id="bestselling-products">
+              <!-- Aquí se agregarán los productos dinámicamente -->
+          </div>
       </div>
-  
-    </div>
-  </section>
+
+  </div>
+</section>
+
   
 
   <section id="register" style="background: url('images/background-img.png') no-repeat center center/cover; padding: 50px 0;">
@@ -1004,7 +1008,7 @@
                 li.innerHTML = `
                     <div class="d-flex align-items-center">
                         <button class="btn btn-sm btn-outline-secondary btn-decrease" data-index="${index}">-</button>
-                        <span class="mx-2">${item.name} x${item.quantity}</span>
+                        <span class="mx-2">${item.name} x${item.quantity} (${item.weight})</span>
                         <button class="btn btn-sm btn-outline-secondary btn-increase" data-index="${index}">+</button>
                     </div>
                     <span>$${(item.price * item.quantity).toFixed(2)}</span>
@@ -1020,13 +1024,13 @@
         }
 
         // Función para agregar productos al carrito
-        function addToCart(productId, productName, productPrice) {
+        function addToCart(productId, productName, productPrice, productWeight) {
             const existingProduct = cart.find(item => item.id === productId);
 
             if (existingProduct) {
                 existingProduct.quantity += 1;
             } else {
-                cart.push({ id: productId, name: productName, price: productPrice, quantity: 1 });
+                cart.push({ id: productId, name: productName, price: productPrice, quantity: 1, weight: productWeight });
             }
 
             updateCartUI();
@@ -1073,8 +1077,9 @@
                 const productId = button.getAttribute('data-product-id');
                 const productName = button.getAttribute('data-product-name');
                 const productPrice = parseFloat(button.getAttribute('data-product-price'));
+                const productWeight = button.getAttribute('data-product-weight') || 'Peso no disponible';
 
-                addToCart(productId, productName, productPrice);
+                addToCart(productId, productName, productPrice, productWeight);
             }
 
             // Event listener para manejar el botón de disminuir la cantidad
@@ -1104,7 +1109,7 @@
                 prevEl: '.swiper-button-prev',
             },
         });
-
+        
         // Función para cargar productos y manejar acciones del carrito
         function loadProducts(apiUrl, containerSelector, swiperSelector) {
             fetch(apiUrl)
@@ -1114,29 +1119,24 @@
                     container.innerHTML = ''; 
 
                     products.forEach(product => {
-                        // Handle multiple images and choose the first one as the main image
                         const imageUrls = product.image_url.split(',');
                         const mainImageUrl = imageUrls.length > 0 ? imageUrls[0].trim() : 'default-image.png'; 
+                        const productWeight = product.weight ? product.weight : 'Peso no disponible'; 
 
                         const productElement = `
                             <div class="swiper-slide">
                                 <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                    <a href="single-product.html?id=${product.id}"><img src="${mainImageUrl}" class="img-fluid rounded-4" alt="${product.name}"></a>
+                                    <a href="single-product.html?id=${product.id}">
+                                        <img src="${mainImageUrl}" class="img-fluid rounded-4" alt="${product.name}">
+                                    </a>
                                     <div class="card-body p-0">
                                         <a href="single-product.html?id=${product.id}">
                                             <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                                            <h5 class="card-title pt-4 m-0">Peso del producto:  ${productWeight} Kg</h5>
                                         </a>
                                         <div class="card-text">
-                                            <span class="rating secondary-font">
-                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                                                5.0
-                                            </span>
                                             <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
-                                            <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                            <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}" data-product-weight="${product.weight || 'Peso no disponible'}">
                                                 Agregar al carrito
                                             </button>
                                         </div>
@@ -1147,6 +1147,7 @@
                         container.insertAdjacentHTML('beforeend', productElement);
                     });
 
+                    // Inicializar el Swiper después de cargar los productos
                     new Swiper(swiperSelector, {
                         slidesPerView: 4,
                         spaceBetween: 30,
@@ -1163,13 +1164,12 @@
         }
 
         // Cargar productos en los sliders
-        loadProducts('http://localhost:8080/api/categories/5', '#bestselling-products', '.bestselling-swiper');
-        loadProducts('http://localhost:8080/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
-        loadProducts('http://localhost:8080/api/categories/11', '#products-carousel', '#products-carousel');
+        loadProducts('/api/categories/5', '#bestselling-products', '.bestselling-swiper');
+        loadProducts('/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
+        loadProducts('/api/categories/11', '#products-carousel', '#products-carousel');
 
         // Manejo de tarjetas de productos
         const productCards = document.querySelectorAll('.product-card');
-
         productCards.forEach(card => {
             card.addEventListener('click', () => {
                 const productId = card.getAttribute('data-id');
@@ -1184,11 +1184,11 @@
             const userInfo = document.getElementById('user-info');
             userInfo.innerHTML = `
                 <p>Bienvenido, ${user.name}</p>
-                <a href="/logout">Cerrar sesión</a>
+                <a href="/api/logout">Cerrar sesión</a>
             `;
         }
 
-        fetch('/account-info')
+        fetch('/api/account-info')
             .then(response => {
                 if (!response.ok) {
                     const userInfo = document.getElementById('user-info');
@@ -1215,7 +1215,7 @@
             const formData = new FormData(this);
             const formObject = Object.fromEntries(formData.entries());
 
-            fetch('/register', {
+            fetch('/api/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1225,11 +1225,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Limpiar el formulario después del registro exitoso
                     document.getElementById('register-form').reset();
 
-                    // Intentar loguear al usuario automáticamente después del registro
-                    return fetch('/login', {
+                    return fetch('/api/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1243,9 +1241,8 @@
             .then(response => response.json())
             .then(loginData => {
                 if (loginData.success) {
-                    // Actualizar la interfaz de usuario para mostrar la bienvenida
                     updateAccountInfo(loginData.user);
-                    window.location.href = loginData.redirectUrl || '/'; // Redirigir después de un login exitoso
+                    window.location.href = loginData.redirectUrl || '/';
                 } else {
                     throw new Error('Error durante el login');
                 }
@@ -1273,12 +1270,12 @@
     document.getElementById('product-search').addEventListener('input', function() {
         const query = this.value;
 
-        if (query.length >= 3) {  // Comienza a buscar después de 3 letras
+        if (query.length >= 3) {  
             fetch(`/api/products/search?name=${query}`)
                 .then(response => response.json())
                 .then(products => {
                     const suggestions = document.getElementById('suggestions');
-                    suggestions.innerHTML = '';  // Limpia sugerencias previas
+                    suggestions.innerHTML = ''; 
 
                     products.forEach(product => {
                         const suggestionItem = document.createElement('a');
@@ -1290,11 +1287,11 @@
                 })
                 .catch(error => console.error('Error fetching product suggestions:', error));
         } else {
-            document.getElementById('suggestions').innerHTML = '';  // Limpia si no hay suficiente texto
+            document.getElementById('suggestions').innerHTML = ''; 
         }
     });
-
 </script>
+
 
 </body>
 

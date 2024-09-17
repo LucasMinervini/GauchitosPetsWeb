@@ -62,7 +62,7 @@
 
             <button type="submit">Login</button>
         </form>
-        <p>No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
+        <p>No tienes cuenta? <a href="/register.html">Regístrate aquí</a></p>
     </div>
 
     <script>
@@ -73,7 +73,7 @@
             const password = document.getElementById('password').value;
 
             // Realizar la solicitud POST a la API de autenticación
-            fetch('/login', {
+            fetch('/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

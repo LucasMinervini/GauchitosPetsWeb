@@ -1,11 +1,15 @@
 // routes/productRoutes.js
 const express = require('express');
 const productController = require('../../controllers/productsController');
+const path = require('path');
+
 
 const router = express.Router();
 
+
+
 // Integrar multer en la ruta que crea un nuevo producto
-app.post('/api/products', upload.array('images', 6), productController.createProduct);
+router.post('/api/products', upload.array('images', 6), productController.createProduct);
 
 
 // Obtener todos los productos
@@ -28,6 +32,9 @@ router.get('/price/:id',productController.getPriceProductById);
 
 //Obtener producto por categoria
 router.get('/categories/:category_id',productController.getCategory);
+
+//Url para verificar si esta logeado 
+router.get('/check-login', productController.checkLogin);
 
 
 module.exports = router;

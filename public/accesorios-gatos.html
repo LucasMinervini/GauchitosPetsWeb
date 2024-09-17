@@ -167,7 +167,7 @@
     <main class="container my-5">
         <h1 class="text-center mb-5">Accesorios para Gatos</h1>
         <div class="swiper bestselling-swiper">
-          <div class="swiper-wrapper" id="bestselling-products">
+          <div class="swiper-wrapper" id="cats-products">
             <!-- Aquí se agregarán los productos dinámicamente -->
           </div>
         </div>
@@ -273,76 +273,42 @@
   <script src="js/iconify.js"></script>
   <script src="js/cart.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const urlParams = new URLSearchParams(window.location.search);
-      const productId = urlParams.get('id');
-  
-      if (productId) {
-          const productApiUrl = `http://localhost:8080/api/products/details/${productId}`;
-          const fichaTecnicaApiUrl = `http://localhost:8080/api/products/fichaTecnica/${productId}`;
-  
-          loadSingleProduct(productApiUrl);
-          loadFichaTecnica(fichaTecnicaApiUrl);
-      } else {
-          document.getElementById('product-name').textContent = 'Producto no encontrado';
-      }
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('http://localhost:8080/api/categories/7')
+          .then(response => response.json())
+          .then(data => {
+              const container = document.getElementById('cats-products');
+              container.innerHTML = ''; 
+
+              data.forEach(product => {
+                  const productHTML = `
+                      <div class="col-md-4">
+                          <div class="card mb-4">
+                              <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
+                              <div class="card-body">
+                                  <h5 class="card-title">${product.name}</h5>
+                                  <p class="card-text">$${parseFloat(product.retail_price).toFixed(2)}</p>
+                                  <button class="btn btn-primary btn-add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">Agregar al carrito</button>
+                              </div>
+                          </div>
+                      </div>`;
+                  container.insertAdjacentHTML('beforeend', productHTML);
+              });
+
+              // Add event listeners for the cart buttons if needed
+              document.querySelectorAll('.btn-add-to-cart').forEach(button => {
+                  button.addEventListener('click', function() {
+                      const productId = this.getAttribute('data-product-id');
+                      const productName = this.getAttribute('data-product-name');
+                      const productPrice = this.getAttribute('data-product-price');
+
+                      // Handle adding to cart here
+                      console.log(`Product added: ${productName} (ID: ${productId}) - $${productPrice}`);
+                  });
+              });
+          })
+          .catch(error => console.error('Error fetching dog food data:', error));
   });
-  
-  function loadSingleProduct(apiUrl) {
-      fetch(apiUrl)
-          .then(response => {
-              if (!response.ok) throw new Error('Error al obtener el producto');
-              return response.json();
-          })
-          .then(product => {
-              if (!product || !product.name) {
-                  document.getElementById('product-name').textContent = 'Producto no encontrado';
-                  document.getElementById('product-price').textContent = 'Precio no disponible';
-                  document.getElementById('product-description').textContent = 'Descripción no disponible';
-                  return;
-              }
-  
-              // Mostrar los detalles del producto
-              document.getElementById('product-name').textContent = product.name;
-              document.getElementById('product-price').textContent = product.retail_price
-                  ? `$${parseFloat(product.retail_price).toFixed(2)}`
-                  : 'Precio no disponible';
-              document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
-  
-              // Mostrar imágenes
-              const imageUrls = product.image_url.split(',');
-              document.getElementById('product-image').src = imageUrls[0] || 'default-image.png';
-  
-              const gallery = document.getElementById('product-gallery');
-              gallery.innerHTML = '';
-              imageUrls.forEach(url => {
-                  const imgElement = document.createElement('img');
-                  imgElement.src = url.trim();
-                  imgElement.alt = product.name;
-                  imgElement.addEventListener('click', () => changeMainImage(url));
-                  gallery.appendChild(imgElement);
-              });
-  
-              // Crear botón de "Agregar al carrito"
-              document.getElementById('product-actions').innerHTML = `
-                  <button class="btn btn-primary btn-add-to-cart mt-3" 
-                      data-product-id="${product.id}" 
-                      data-product-name="${product.name}" 
-                      data-product-price="${product.retail_price}">
-                      Agregar al carrito
-                  </button>
-              `;
-  
-              // Asignar evento al botón "Agregar al carrito"
-              document.querySelector('.btn-add-to-cart').addEventListener('click', function () {
-                  addToCart(product.id, product.name, product.retail_price);
-              });
-          })
-          .catch(error => {
-              console.error('Error al obtener el producto:', error);
-              document.getElementById('product-name').textContent = 'Error al cargar el producto';
-          });
-  }
   
   // Función para agregar productos al carrito
   function addToCart(productId, productName, productPrice) {
@@ -384,40 +350,6 @@
       setTimeout(() => {
           alertContainer.remove();
       }, 3000);
-  }
-  
-  // Cambiar imagen principal al hacer clic en las miniaturas
-  function changeMainImage(src) {
-      document.getElementById('product-image').src = src;
-  }
-  
-  // Cargar ficha técnica
-  function loadFichaTecnica(apiUrl) {
-      fetch(apiUrl)
-          .then(response => {
-              if (!response.ok) throw new Error('Error al obtener la ficha técnica');
-              return response.json();
-          })
-          .then(details => {
-              if (!details.category) {
-                  console.error('El campo "category" no está definido en la respuesta:', details);
-                  return;
-              }
-  
-              // Mostrar ficha técnica según categoría
-              if (details.category === 'alimentos') {
-                  document.getElementById('ficha-alimentos').style.display = 'block';
-                  document.getElementById('product-age-alimentos').textContent = details.age || 'No disponible';
-                  document.getElementById('product-brand-alimentos').textContent = details.brand || 'No disponible';
-                  document.getElementById('pet-size-alimentos').textContent = details.pet_size || 'No disponible';
-                  document.getElementById('medicated-food-alimentos').textContent = details.medicated_food ? 'Sí' : 'No';
-                  document.getElementById('product-presentation-alimentos').textContent = details.presentation || 'No disponible';
-                  document.getElementById('product-flavor-alimentos').textContent = details.flavor || 'No disponible';
-              }
-          })
-          .catch(error => {
-              console.error('Error al obtener la ficha técnica:', error.message);
-          });
   }
   
 </script>

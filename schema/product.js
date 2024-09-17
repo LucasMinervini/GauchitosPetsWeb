@@ -7,9 +7,7 @@ const productSchema = z.object({
   }).regex(/^[A-Za-z\s]+$/, {
     message: 'El nombre solo puede contener letras y espacios'
   }),
-  sku: z.number({
-    message: 'El SKU solo puede contener números'
-  }),
+  sku: z.string(),
   description: z.string(),
   retail_price: z.number({
     invalid_type_error: 'Tiene que ser un número'
@@ -17,7 +15,8 @@ const productSchema = z.object({
   cost: z.number().min(1),
   stock_quantity: z.number().min(1),
   category_id: z.array(z.number()).min(1, 'Debes asignar al menos una categoría'),
-  provider_id: z.number().positive()
+  provider_id: z.number().positive(),
+  weight: z.string()
 });
 
 
@@ -29,12 +28,12 @@ function validateProd(object) {
   try {
       parsedObject = {
           ...object,
-          sku: parseInt(object.sku, 10),
+          
           retail_price: parseFloat(object.retail_price),
           cost: parseFloat(object.cost),
           stock_quantity: parseInt(object.stock_quantity, 10),
           category_id: Array.isArray(object.category_id) ? object.category_id.map(id => parseInt(id, 10)) : JSON.parse(object.category_id),
-          provider_id: parseInt(object.provider_id, 10),
+          provider_id: parseInt(object.provider_id, 10)
       };
 
       console.log('Category IDs before validation:', parsedObject.category_id, 'Length:', parsedObject.category_id.length);

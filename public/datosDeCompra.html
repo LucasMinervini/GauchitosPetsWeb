@@ -157,7 +157,7 @@
                     const listItem = document.createElement('li');
                     listItem.innerHTML = `
                         <span>${item.name} x${item.quantity}</span>
-                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)} (${item.weight} kg)</span>
                     `;
                     cartItemsContainer.appendChild(listItem);
                     total += item.price * item.quantity;
