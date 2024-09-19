@@ -307,9 +307,14 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="images">Imágenes</label>
+                    <label for="images">Imágenes (puedes subir hasta 8)</label>
                     <input type="file" class="form-control-file" id="images" name="images" accept="image/*" multiple required>
+
+
                 </div>
+                
+                <div id="preview-container" class="row"></div>
+                
                 <button type="submit" class="btn btn-success">Crear Producto</button>
             </form>
             <div id="createdProductId" class="mt-3"></div> <!-- Para mostrar el ID del producto creado -->
@@ -494,6 +499,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="jquery.sumoselect.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <script>
     const apiUrl = "/api/products";
 
@@ -521,56 +527,61 @@
     }
 
     // Obtener producto por Nombre
-    function getProductByName() {
-        const productName = document.getElementById('productName').value;
-        fetch(`${apiUrl}/${productName}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Producto no encontrado');
-                }
-                return response.json();
-            })
-            .then(product => {
-                let output = '<h3>Detalle del producto</h3>';
-                output += `
-                    <p>ID: ${product.id}</p>
-                    <p>Nombre: ${product.name}</p>
-                    <p>SKU: ${product.sku}</p>
-                    <p>Descripción: ${product.description}</p>
-                    <p>Precio de venta: ${product.retail_price}</p>
-                    <p>Costo: ${product.cost}</p>
-                    <p>Cantidad en stock: ${product.stock_quantity}</p>
-                    <p>Categoría ID: ${product.category_id}</p>
-                    <p>Proveedor ID: ${product.provider_id}</p>
-                `;
-                document.getElementById('productByName').innerHTML = output;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('productByName').innerHTML = '<p>Producto no encontrado</p>';
-            });
-    }
+    // Obtener producto por Nombre
+function getProductByName() {
+    const productName = document.getElementById('productName').value;
+    fetch(`${apiUrl}/name/${productName}`)  // Usar el endpoint correcto
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Producto no encontrado');
+            }
+            return response.json();
+        })
+        .then(product => {
+            let output = '<h3>Detalle del producto</h3>';
+            output += `
+                <p>ID: ${product.id}</p>
+                <p>Nombre: ${product.name}</p>
+                <p>SKU: ${product.sku}</p>
+                <p>Descripción: ${product.description}</p>
+                <p>Precio de venta: ${product.retail_price}</p>
+                <p>Costo: ${product.cost}</p>
+                <p>Cantidad en stock: ${product.stock_quantity}</p>
+                <p>Categoría ID: ${product.category_id}</p>
+                <p>Proveedor ID: ${product.provider_id}</p>
+            `;
+            document.getElementById('productByName').innerHTML = output;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('productByName').innerHTML = '<p>Producto no encontrado</p>';
+        });
+}
 
-    // Crear Producto Nuevo
-    document.getElementById('createProductForm').addEventListener('submit', function(event) {
+// CREAR PRODUCTO
+document.getElementById('createProductForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    const retailPriceField = document.getElementById('retail_price');
-    const costField = document.getElementById('cost');
-
-    // Eliminar comas de los valores antes de enviar
-    let retailPrice = retailPriceField.value.replace(/,/g, '');
-    let cost = costField.value.replace(/,/g, '');
-
-    // Actualizar los valores de los campos
-    retailPriceField.value = retailPrice;
-    costField.value = cost;
-
-    // Ahora proceder con el envío del formulario
     const form = document.getElementById('createProductForm');
     const formData = new FormData(form);
 
-    console.log('Datos del formulario antes de enviar:', Object.fromEntries(formData.entries()));
+    // Obtener el orden de las imágenes en el contenedor
+    const previewContainer = document.getElementById('preview-container');
+    const orderedImages = [];
+
+    previewContainer.querySelectorAll('img').forEach((img, index) => {
+        const src = img.src;
+        if (src) {
+            orderedImages.push({
+                index: img.getAttribute('data-index') || index,
+                src: src
+            });
+        }
+    });
+
+    
+
+    formData.append('orderedImages', JSON.stringify(orderedImages));
 
     fetch(`/api/products`, {
         method: 'POST',
@@ -584,7 +595,6 @@
         return response.json();
     })
     .then(data => {
-        console.log('Producto creado:', data);
         document.getElementById('createdProductId').innerHTML = `Producto creado exitosamente. ID del producto: <strong>${data.id}</strong>`;
     })
     .catch(error => {
@@ -595,74 +605,110 @@
 
 
 
-    
+
     // Borrar producto por ID
-    function deleteProductById() {
-        const productId = document.getElementById('deleteProductId').value;
-        fetch(`${apiUrl}/${productId}`, {
-            method: 'DELETE'
-        })
-            .then(response => response.json())
-            .then(data => {
-                alert('Producto borrado exitosamente');
-            })
-            .catch(error => console.error('Error:', error));
-    }
+function deleteProductById() {
+    const productId = document.getElementById('deleteProductId').value;
+    fetch(`${apiUrl}/${productId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al borrar el producto');
+        }
+        return response.json();
+    })
+    .then(() => {
+        alert('Producto borrado exitosamente');
+        document.getElementById('deleteProductId').value = ''; // Limpiar el campo
+    })
+    .catch(error => console.error('Error:', error));
+}
+
 
     // Actualizar producto por ID
-    function updateProductById() {
-        const productId = document.getElementById('updateProductId').value;
-        const updatedData = new FormData(); // Usar FormData para manejar los archivos
-        
-        const fields = [
-            'updateName',
-            'updateSku',
-            'updateDescription',
-            'updateRetailPrice',
-            'updateCost',
-            'updateStockQuantity',
-            'updateCategoryId',
-            'updateProviderId'
-        ];
-    
-        // Agregar valores a FormData
-        fields.forEach(field => {
-            const value = document.getElementById(field).value;
-            if (value) {
-                let key = field.replace('update', '').toLowerCase();
-                // Mapeo manual para el campo 'retail_price'
-                if (key === 'retailprice') {
-                    key = 'retail_price';
+    // Actualizar producto por ID
+function updateProductById() {
+    const productId = document.getElementById('updateProductId').value;
+    const updatedData = new FormData(); // Usar FormData para manejar los archivos
+
+    const fields = [
+        'updateName',
+        'updateSku',
+        'updateDescription',
+        'updateRetailPrice',
+        'updateCost',
+        'updateStockQuantity',
+        'updateCategoryId',
+        'updateProviderId'
+    ];
+
+    // Mapeo de los nombres de los campos en el frontend a los nombres esperados en la base de datos
+    const fieldMappings = {
+        'updateRetailPrice': 'retail_price',
+        'updateStockQuantity': 'stock_quantity',
+        'updateCategoryId': 'category_id',
+        'updateProviderId': 'provider_id'
+    };
+
+    // Agregar valores a FormData solo si existen y son válidos
+    fields.forEach(field => {
+        const element = document.getElementById(field);
+
+        // Si el campo tiene un valor, lo procesamos
+        if (element && element.value.trim()) {
+            let key = fieldMappings[field] || field.replace('update', '').toLowerCase();
+            let value = element.value.trim();
+
+            // Verificar si es un campo numérico
+            if (key === 'retail_price' || key === 'cost' || key === 'stock_quantity') {
+                if (value !== "") {  // Solo si el valor no está vacío
+                    value = parseFloat(value); // Convertir a número
+
+                    if (isNaN(value)) {  // Si no es un número válido, lo ignoramos
+                        console.warn(`El valor para ${key} no es válido y no será enviado.`);
+                        return;
+                    }
+                } else {
+                    // Si el campo está vacío, lo ignoramos
+                    return;
                 }
-                updatedData.append(key, isNaN(value) ? value : parseFloat(value));
             }
-        });
-    
-        // Agregar imagen si el usuario selecciona una nueva
-        const mainImage = document.getElementById('updateMainImage').files[0];
-        if (mainImage) {
-            updatedData.append('mainImage', mainImage);
+
+            // Si el valor es válido, lo agregamos al FormData
+            updatedData.append(key, value);
         }
-    
-        fetch(`${apiUrl}/${productId}`, {
-            method: 'PATCH',
-            body: updatedData // Enviar FormData directamente
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al actualizar el producto');
-            }
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('updateResponse').innerHTML = 'Producto actualizado exitosamente';
-            console.log('Producto actualizado:', data);
-        })
-        .catch(error => {
-            document.getElementById('updateResponse').innerHTML = 'Error al actualizar el producto';
-            console.error('Error:', error);
-        });
+    });
+
+    // Agregar la imagen principal si el usuario selecciona una nueva
+    const mainImage = document.getElementById('updateMainImage').files[0];
+    if (mainImage) {
+        updatedData.append('mainImage', mainImage);
     }
+
+    // Enviar la solicitud al servidor
+    fetch(`${apiUrl}/${productId}`, {
+        method: 'PATCH',
+        body: updatedData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => { throw new Error(text); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('updateResponse').innerHTML = 'Producto actualizado exitosamente';
+    })
+    .catch(error => {
+        document.getElementById('updateResponse').innerHTML = `Error al actualizar el producto: ${error.message}`;
+        console.error('Error:', error);
+    });
+}
+
+    
+    
+    
     
     // Mostrar formularios dinámicos para la ficha técnica
 document.getElementById('categorySelect').addEventListener('change', function() {
@@ -728,7 +774,7 @@ document.querySelectorAll('#fichaAlimentosForm, #fichaRopaForm, #fichaAccesorios
             return;
         }
 
-        console.log('Datos a enviar:', formEntries);  // Asegúrate de revisar esto en la consola
+       
 
         fetch(`/api/products/fichaTecnica`, {
             method: 'POST',
@@ -746,7 +792,7 @@ document.querySelectorAll('#fichaAlimentosForm, #fichaRopaForm, #fichaAccesorios
         .then(() => {
             // Mostrar los datos que fueron enviados (formEntries) en lugar de los datos devueltos
             alert('Ficha técnica creada exitosamente con los siguientes datos:');
-            console.log('Ficha técnica creada con los siguientes datos:', formEntries);
+            
             alert(JSON.stringify(formEntries, null, 2));  // Muestra los datos enviados en formato legible
         })
         .catch(error => {
@@ -785,29 +831,6 @@ document.getElementById('retail_price').addEventListener('input', function(e) {
     e.target.value = decimalPart !== undefined ? `${integerPart}.${decimalPart}` : integerPart;
 });
 
-let presentationCountAlimentos = 1;
-
-function addPresentationFieldAlimentos() {
-    if (presentationCountAlimentos < 5) {
-        const container = document.getElementById('presentationsContainerAlimentos');
-        const newField = document.createElement('div');
-        newField.classList.add('input-group', 'mb-3');
-        newField.innerHTML = `
-            <input type="text" class="form-control" name="presentation[]" placeholder="Presentación (e.g., 15kg)">
-            <button class="btn btn-danger" type="button" onclick="removePresentationFieldAlimentos(this)">Eliminar</button>
-        `;
-        container.appendChild(newField);
-        presentationCountAlimentos++;
-    } else {
-        alert('Solo puedes agregar hasta 5 presentaciones.');
-    }
-}
-
-function removePresentationFieldAlimentos(button) {
-    const container = document.getElementById('presentationsContainerAlimentos');
-    container.removeChild(button.parentElement);
-    presentationCountAlimentos--;
-}
 </script>
 <script>
     document.getElementById('cost').addEventListener('input', function(e) {
@@ -884,6 +907,112 @@ document.getElementById('weight').addEventListener('input', function(e) {
     e.target.value = value;
 });
 
+document.getElementById('images').addEventListener('change', function(event) {
+    const previewContainer = document.getElementById('preview-container');
+    previewContainer.innerHTML = ''; // Limpiar el contenedor de vista previa
+
+    let files = Array.from(event.target.files); // Convertir la lista de archivos a un arreglo
+
+    // Validar el número de imágenes subidas (máx 8)
+    if (files.length > 8) {
+        alert('Puedes subir un máximo de 8 imágenes.');
+        return;
+    }
+
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Crear un div para la columna que contendrá la imagen y botones
+            const colDiv = document.createElement('div');
+            colDiv.classList.add('col-md-3', 'mb-3', 'position-relative');
+
+            // Crear el elemento de imagen
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.classList.add('img-thumbnail', 'draggable-img');
+            img.setAttribute('data-index', index); 
+            img.setAttribute('alt', 'Imagen de producto');
+            img.setAttribute('style', 'width: 100%; height: auto; cursor: move;');
+
+            // Etiquetar la primera imagen como la imagen principal (portada)
+            if (index === 0) {
+                const portadaLabel = document.createElement('span');
+                portadaLabel.innerHTML = 'Imagen principal';
+                portadaLabel.classList.add('badge', 'bg-success', 'position-absolute');
+                portadaLabel.style.top = '5px';
+                portadaLabel.style.left = '5px';
+                portadaLabel.style.padding = '5px';
+                colDiv.appendChild(portadaLabel);
+            }
+
+            // Crear el botón de eliminar
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '✖';
+            deleteButton.classList.add('btn', 'btn-danger', 'position-absolute');
+            deleteButton.style.top = '5px';
+            deleteButton.style.right = '5px';
+            deleteButton.style.padding = '0 5px';
+            deleteButton.style.borderRadius = '50%';
+
+            // Manejar la eliminación de la imagen
+            deleteButton.addEventListener('click', function() {
+                colDiv.remove(); // Eliminar la vista previa
+                files = files.filter((_, fileIndex) => fileIndex !== index); // Eliminar el archivo del arreglo
+                actualizarPortada(); // Actualizar la imagen principal (portada)
+            });
+
+            colDiv.appendChild(img);
+            colDiv.appendChild(deleteButton);
+            previewContainer.appendChild(colDiv);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Inicializar el ordenamiento para arrastrar y soltar
+    new Sortable(previewContainer, {
+        animation: 150,
+        onEnd: function(evt) {
+            actualizarPortada(); // Actualizar la imagen principal después del ordenamiento
+        }
+    });
+});
+
+// Función para actualizar la imagen principal (portada)
+function actualizarPortada() {
+    const previewContainer = document.getElementById('preview-container');
+    const images = previewContainer.querySelectorAll('.col-md-3');
+
+    // Eliminar cualquier etiqueta "Portada" existente
+    images.forEach(image => {
+        const portadaLabel = image.querySelector('.badge');
+        if (portadaLabel) {
+            portadaLabel.remove();
+        }
+    });
+
+    // Añadir la etiqueta "Portada" a la primera imagen de la lista
+    if (images.length > 0) {
+        const firstImage = images[0]; // Seleccionar la primera imagen
+        const portadaLabel = document.createElement('span');
+        portadaLabel.innerHTML = 'Imagen principal';
+        portadaLabel.classList.add('badge', 'bg-success', 'position-absolute');
+        portadaLabel.style.top = '5px';
+        portadaLabel.style.left = '5px';
+        portadaLabel.style.padding = '5px';
+        firstImage.appendChild(portadaLabel); // Añadir la etiqueta a la primera imagen
+    }
+}
+
+// Script para detectar tamaño de img
+document.getElementById('images').addEventListener('change', function(event) {
+    const files = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+        if (files[i].size > 5 * 1024 * 1024) { // 5 MB en bytes
+            alert(`La imagen ${files[i].name} supera el límite de 5 MB.`);
+            return; // Detener la subida si se excede el tamaño
+        }
+    }
+});
 
 </script>
 

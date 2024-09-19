@@ -3,28 +3,54 @@ const express = require('express');
 const productController = require('../controllers/productsController');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const router = express.Router();
+
+// Verificar que la carpeta 'public/images' exista, si no, crearla
+const imagesDir = path.join(__dirname, '../public/images');
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
 
 // Configuración de almacenamiento para multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const imagesDir = path.join(__dirname, '../public/images');
-    console.log(imagesDir);
+    const imagesDir = path.join(__dirname, '../public/images'); // Ruta para guardar las imágenes
     cb(null, imagesDir); // Guardar la imagen en 'public/images'
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Generar un nombre único para la imagen
+    // Generar un nombre único utilizando el timestamp y un número aleatorio para evitar colisiones
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // Generar un nombre único para la imagen
   }
 });
 
+// Configuración de límites y filtro de archivos
 const upload = multer({
   storage: storage,
-  limits: { files: 6 }
+  limits: {
+    fileSize: 5 * 1024 * 1024, // Limitar el tamaño de cada archivo a 5MB
+    files: 8, // Permitir hasta 8 archivos
+    fieldSize: 50 * 1024 * 1024 // Tamaño total de los campos (50MB)
+  },
+  fileFilter: (req, file, cb) => {
+    // Validación de tipo de archivo (solo imágenes)
+    const filetypes = /jpeg|jpg|png/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten imágenes en formato JPEG o PNG'));
+    }
+  }
 });
 
 // Crear un nuevo producto con múltiples imágenes
-router.post('/products', upload.array('images', 6), productController.createProduct);
+router.post('/products', upload.array('images', 8), productController.createProduct);
+
 
 // Actualizar un producto por ID con una nueva imagen principal
 router.patch('/products/:id', upload.single('mainImage'), productController.updateProduct);

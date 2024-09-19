@@ -655,20 +655,27 @@
                     ? `$${parseFloat(product.retail_price).toFixed(2)}`
                     : 'Precio no disponible';
                 document.getElementById('product-description').textContent = product.description || 'Descripción no disponible';
-    
-                // Mostrar el peso del producto
-                document.getElementById('product-weight').textContent = product.weight + 'KG' || 'Peso no disponible'; 
+                document.getElementById('product-weight').textContent = product.weight ? `${product.weight} KG` : 'Peso no disponible';
     
                 // Mostrar imágenes
-                const imageUrls = product.image_url.split(',');
-                document.getElementById('product-image').src = imageUrls[0] || 'default-image.png';
+                let imageUrls;
+                try {
+                    // Si las URLs de las imágenes vienen en formato JSON, parsearlas
+                    imageUrls = JSON.parse(product.image_url);
+                } catch (e) {
+                    // Si no están en formato JSON, separar por comas
+                    imageUrls = product.image_url.split(',');
+                }
+    
+                const mainImage = imageUrls.length > 0 ? imageUrls[0] : 'default-image.png';
+                document.getElementById('product-image').src = mainImage;
     
                 const gallery = document.getElementById('product-gallery');
                 gallery.innerHTML = '';
-                imageUrls.forEach(url => {
+                imageUrls.forEach((url, index) => {
                     const imgElement = document.createElement('img');
                     imgElement.src = url.trim();
-                    imgElement.alt = product.name;
+                    imgElement.alt = `Imagen ${index + 1} del producto ${product.name}`;
                     imgElement.addEventListener('click', () => changeMainImage(url));
                     gallery.appendChild(imgElement);
                 });
@@ -694,6 +701,10 @@
                 document.getElementById('product-name').textContent = 'Error al cargar el producto';
             });
     }
+    
+    
+    
+    
     
 
     function loadFichaTecnica(apiUrl) {

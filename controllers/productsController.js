@@ -276,7 +276,7 @@ const completePurchase = async (req, res) => {
       res.status(201).json({ message: 'Compra realizada con éxito', orderId });
   } catch (err) {
       console.error('Error al procesar la compra:', err);
-      res.status(500).json({ message: 'Error al procesar la compra' });
+      res.status(500).json({ message:  err.message });
   }
 };
 
@@ -297,7 +297,7 @@ const getAccountInfo = (req, res) => {
   const query = 'SELECT name, email, address, phone, user_type_id FROM users WHERE id = ?';
   db.query(query, [req.session.userId], (err, results) => {
       if (err) {
-          console.error('Error fetching account info:', err);
+          console.error('Error fetching account info:', err.message);
           return res.status(500).send('Server error');
       }
       if (results.length === 0) {
@@ -318,114 +318,110 @@ const getAccountInfo = (req, res) => {
 
 // CREAR PRODUCTO
 const createProduct = (req, res) => {
-  
+  // Imprimir los datos recibidos para verificar
+  console.log('Datos recibidos:', req.body);
+  console.log('Archivos recibidos:', req.files);  // Verificar si las imágenes están llegando
 
-  const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id, weight } = req.body;
+  const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, weight, orderedImages } = req.body;
 
-  
-  const validCategories = ['alimentos', 'ropa', 'accesorios'];
-  if (!validCategories.includes(category)) {
-      return res.status(400).json({ error: 'Categoría no válida' });
+  // Validar que orderedImages sea un array válido
+  let parsedOrderedImages;
+  try {
+      parsedOrderedImages = JSON.parse(orderedImages);
+      
+  } catch (err) {
+      console.error('Error al parsear orderedImages:', err);
+      return res.status(400).json({ error: 'orderedImages no es un JSON válido' });
   }
 
-  const result = validateProd({ name, sku, description, retail_price, cost, stock_quantity, category, provider_id, category_id, weight });
-
-  if (!result.success) {
-      return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
-  }
-
-  let categoryIds = req.body.category_id;
-    
-
-try {
-    if (typeof categoryIds === 'string') {
-        categoryIds = JSON.parse(categoryIds);
-    }
-
-    if (!Array.isArray(categoryIds)) {
-        categoryIds = [categoryIds];
-    }
-
-    // Ensure all IDs are valid integers
-    categoryIds = categoryIds
-        .map(id => {
-            if (Array.isArray(id)) {
-                return id.map(innerId => parseInt(innerId, 10)).filter(Number.isInteger);
-            }
-            const parsedId = parseInt(id, 10);
-            return Number.isInteger(parsedId) ? parsedId : null;
-        })
-        .flat()
-        .filter(Number.isInteger);
-
-    
-
-} catch (error) {
-    console.error('Error processing category IDs:', error.message);
-    return res.status(400).json({ error: 'Invalid category IDs provided.' });
-}
-
+  // Procesar los archivos de imágenes
   let imageUrls = [];
   if (Array.isArray(req.files) && req.files.length > 0) {
-      imageUrls = req.files.map(file => `/images/${file.filename}`);
-  } else if (req.files && req.files.filename) {
-      imageUrls = [`/images/${req.files.filename}`];
+      imageUrls = req.files.map(file => {
+          if (!file.mimetype.startsWith('image/')) {
+              return res.status(400).json({ error: 'Solo se permiten archivos de imagen.' });
+          }
+          return `/images/${file.filename}`;
+      });
   }
-  const concatenatedImageUrls = imageUrls.join(',');
 
+  // Verificar si hay imágenes
+  if (imageUrls.length === 0) {
+      return res.status(400).json({ error: 'No se han subido imágenes.' });
+  }
+
+  // Eliminar duplicados de las URLs de imágenes y validar que no excedan el límite
+  const uniqueImageUrls = [...new Set(imageUrls.map(url => url.trim()))];
+  if (uniqueImageUrls.length > 8) {
+      return res.status(400).json({ error: 'No se pueden subir más de 8 imágenes.' });
+  }
+
+  // Verificar si el proveedor existe
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
   db.query(providerQuery, [provider_id], (err, providerResults) => {
       if (err || providerResults.length === 0) {
-          return res.status(400).send('Invalid provider_id');
+          return res.status(400).json({ error: 'provider_id no válido' });
       }
 
+      // Crear un nuevo ID único para el producto
       const newId = crypto.randomUUID();
       const insertProductQuery = `
-    INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_url, weight) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`;
+        INSERT INTO products (id, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_url, weight) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
 
-      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, concatenatedImageUrls, weight], (err, results) => {
-        console.log(results);
+      // Insertar el producto en la base de datos
+      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, JSON.stringify(uniqueImageUrls), weight], (err, results) => {
           if (err) {
-              console.error('Error executing query:', err);
-              return res.status(500).send('Error executing query');
+              console.error('Error al insertar el producto:', err);
+              return res.status(500).json({ error: err.message });
           }
 
+          // Insertar las categorías del producto
           const insertCategoryQuery = `
-              INSERT INTO product_categories (product_id, category_id) 
-              VALUES (?, ?)
+            INSERT INTO product_categories (product_id, category_id) 
+            VALUES (?, ?)
           `;
+
+          let categoryIds = req.body.category_id;
+          if (typeof categoryIds === 'string') {
+              categoryIds = JSON.parse(categoryIds);
+          }
+          if (!Array.isArray(categoryIds)) {
+              categoryIds = [categoryIds];
+          }
 
           let categoryErrors = false;
           let processedCategories = 0;
 
           categoryIds.forEach((categoryId) => {
-              db.query(insertCategoryQuery, [newId, categoryId], (err, results) => {
+              db.query(insertCategoryQuery, [newId, categoryId], (err) => {
                   processedCategories++;
 
                   if (err) {
-                      console.error('Error inserting category:', err);
+                      console.error('Error al insertar la categoría:', err.message);
                       categoryErrors = true;
                   }
 
                   if (processedCategories === categoryIds.length) {
                       if (categoryErrors) {
-                          return res.status(500).send('Error inserting one or more categories');
+                          return res.status(500).json({ error: 'Error al insertar algunas categorías.' });
                       }
 
+                      // Seleccionar todas las categorías del producto
                       const selectCategoriesQuery = `
-                          SELECT category_id FROM product_categories WHERE product_id = ?
+                        SELECT category_id FROM product_categories WHERE product_id = ?
                       `;
                       db.query(selectCategoriesQuery, [newId], (err, categoryResults) => {
                           if (err) {
-                              console.error('Error fetching categories:', err);
-                              return res.status(500).send('Error fetching categories');
+                              console.error('Error al obtener categorías:', err);
+                              return res.status(500).json({ error: err.message });
                           }
 
                           const categories = categoryResults.map(row => row.category_id);
-                          console.log("Product created successfully with ID: ", newId);
-                          res.status(201).send({ id: newId, ...result.data, image_urls: imageUrls, category_ids: categories });
+                          console.log("Producto creado exitosamente con ID: ", newId);
+                          // Respuesta exitosa con el ID del producto y la lista de imágenes
+                          res.status(201).json({ id: newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_urls: uniqueImageUrls, category_ids: categories, weight });
                       });
                   }
               });
@@ -433,9 +429,6 @@ try {
       });
   });
 };
-
-
-
 
 
 // Obtener todos los productos
@@ -454,6 +447,12 @@ const getAllProducts = (req, res) => {
 // Obtener un producto por nombre
 const getProductByName = (req, res) => {
   const { name } = req.query;
+  
+  // Asegurarse de que el parámetro 'name' esté definido
+  if (!name || name.trim() === '') {
+    return res.status(400).json({ error: 'El nombre del producto es requerido' });
+  }
+
   const query = `
       SELECT 
           id, 
@@ -466,21 +465,21 @@ const getProductByName = (req, res) => {
           LOWER(name) LIKE LOWER(?) 
       LIMIT 10`;
 
+  // Pasar el nombre con los comodines
   db.query(query, [`%${name}%`], (err, results) => {
       if (err) {
           console.error('Error ejecutando la búsqueda:', err);
-          res.status(500).json({ error: 'Error ejecutando la búsqueda' });
-          return;
+          return res.status(500).json({ error: 'Error ejecutando la búsqueda' });
       }
 
       if (results.length === 0) {
-          res.status(404).json({ message: 'No se encontraron productos' });
-          return;
+          return res.status(404).json({ message: 'No se encontraron productos' });
       }
 
       res.json(results);  // Devuelve los productos como JSON
   });
 };
+
 
 // Obtener productos por categoria
 const getCategory = (req, res) => {
@@ -773,124 +772,117 @@ const createFichaTecnica = (req, res) => {
 
 //Actualizar producto
 const updateProduct = (req, res) => {
-  const result = ValidatePartialProd(req.body);
-
-  if (!result.success) {
-    return res.status(422).json({ error: result.error.errors.map(e => e.message).join(', ') });
-  }
+  console.log('Datos recibidos para actualización:', req.body);
+  console.log('Archivo recibido para actualización:', req.file); // Aquí debería aparecer la imagen principal
 
   const { id } = req.params;
-  const updates = req.body;
+  const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, weight } = req.body;
 
-  // Verificar que haya campos para actualizar o un archivo de imagen principal
-  if (Object.keys(updates).length === 0 && !req.file) {
-    return res.status(400).json({ error: 'No se proporcionaron campos para actualizar ni una nueva imagen' });
-  }
-
-  let fields = Object.keys(updates).filter(key => key !== 'category_id').map(key => `${key} = ?`);
-  let values = Object.values(updates).filter(value => !Array.isArray(value));
-
-  // Si se proporciona una nueva imagen principal, modificar solo la primera URL de la lista de imágenes
+  // Procesar la nueva imagen principal si existe
+  let mainImageUrl = null;
   if (req.file) {
-    console.log('Imagen recibida:', req.file);
-    
-    // Obtener las imágenes actuales del producto
-    db.query('SELECT image_url FROM products WHERE id = ?', [id], (err, results) => {
-      if (err) {
-        console.error('Error obteniendo las imágenes del producto:', err);
-        return res.status(500).send('Error obteniendo las imágenes del producto');
-      }
-
-      let currentImages = results[0].image_url.split(','); // Suponiendo que las imágenes están separadas por comas
-      currentImages[0] = `images/${req.file.filename}`; // Modificar solo la primera imagen
-
-      // Unir las imágenes modificadas de nuevo en una cadena
-      const updatedImages = currentImages.join(',');
-
-      // Guardar el array modificado de imágenes
-      fields.push('image_url = ?');
-      values.push(updatedImages);
-
-      // Continuar con la actualización del producto
-      executeUpdate(fields,values);
-    });
-  } else {
-    // Si no se está actualizando la imagen, solo continuar con la actualización
-    executeUpdate(fields,values);
+    mainImageUrl = `/images/${req.file.filename}`;
   }
 
-  // Función para ejecutar la consulta de actualización
-  function executeUpdate(fields,values) {
-    // Iniciar la transacción en la base de datos
-    db.beginTransaction(err => {
+  // Si no se proporciona un archivo de imagen, mantenemos las imágenes actuales
+  db.query('SELECT image_url FROM products WHERE id = ?', [id], (err, results) => {
+    if (err) {
+      console.error('Error obteniendo las imágenes del producto:', err);
+      return res.status(500).send('Error obteniendo las imágenes del producto');
+    }
+
+    let currentImages = results.length > 0 && results[0].image_url ? JSON.parse(results[0].image_url) : [];
+
+    // Si se ha proporcionado una nueva imagen principal, reemplazamos la primera
+    if (mainImageUrl) {
+      currentImages[0] = mainImageUrl; // Reemplazar solo la primera imagen (la imagen principal)
+    }
+
+    // Eliminar duplicados de las URLs de imágenes y validar que no excedan el límite
+    const uniqueImageUrls = [...new Set(currentImages.map(url => url.trim()))];
+    if (uniqueImageUrls.length > 8) {
+      return res.status(400).json({ error: 'No se pueden tener más de 8 imágenes.' });
+    }
+
+    // Crear un array para almacenar los campos que deben actualizarse
+    let fields = [];
+    let values = [];
+
+    // Solo agregar los campos que fueron proporcionados
+    if (name) {
+      fields.push('name = ?');
+      values.push(name);
+    }
+    if (sku) {
+      fields.push('sku = ?');
+      values.push(sku);
+    }
+    if (description) {
+      fields.push('description = ?');
+      values.push(description);
+    }
+    if (retail_price) {
+      fields.push('retail_price = ?');
+      values.push(retail_price);
+    }
+    if (cost) {
+      fields.push('cost = ?');
+      values.push(cost);
+    }
+    if (stock_quantity) {
+      fields.push('stock_quantity = ?');
+      values.push(stock_quantity);
+    }
+    if (category) {
+      fields.push('category = ?');
+      values.push(category);
+    }
+    if (provider_id) {
+      fields.push('provider_id = ?');
+      values.push(provider_id);
+    }
+    if (weight) {
+      fields.push('weight = ?');
+      values.push(weight);
+    }
+
+    // Siempre agregar las imágenes actualizadas
+    fields.push('image_url = ?');
+    values.push(JSON.stringify(uniqueImageUrls));
+
+    // Construir la consulta SQL dinámica
+    const updateProductQuery = `
+      UPDATE products 
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
+
+    values.push(id); // Agregar el ID al final para la condición WHERE
+
+    db.query(updateProductQuery, values, (err, results) => {
       if (err) {
-        console.error('Error iniciando la transacción:', err);
-        return res.status(500).send('Error iniciando la transacción');
+        console.error('Error al actualizar el producto:', err);
+        return res.status(500).json({ error: err.message });
       }
 
-      const updateQuery = `UPDATE products SET ${fields.join(', ')} WHERE id = ?`;
-
-      db.query(updateQuery, [...values, id], (err, results) => {
-        if (err) {
-          return db.rollback(() => {
-            console.error('Error ejecutando la consulta de actualización:', err);
-            res.status(500).send('Error ejecutando la consulta');
-          });
-        }
-
-        console.log('Producto actualizado, ID:', id);
-
-        if (updates.category_id && Array.isArray(updates.category_id)) {
-          const deleteQuery = `DELETE FROM product_categories WHERE product_id = ?`;
-          const insertQuery = `INSERT INTO product_categories (product_id, category_id) VALUES ?`;
-          const categoryValues = updates.category_id.map(catId => [id, catId]);
-
-          db.query(deleteQuery, [id], (err) => {
-            if (err) {
-              return db.rollback(() => {
-                console.error('Error al eliminar categorías anteriores:', err);
-                res.status(500).send('Error eliminando categorías anteriores');
-              });
-            }
-
-            db.query(insertQuery, [categoryValues], (err) => {
-              if (err) {
-                return db.rollback(() => {
-                  console.error('Error al insertar nuevas categorías:', err);
-                  res.status(500).send('Error insertando nuevas categorías');
-                });
-              }
-
-              db.commit(err => {
-                if (err) {
-                  return db.rollback(() => {
-                    console.error('Error al confirmar la transacción:', err);
-                    res.status(500).send('Error confirmando la transacción');
-                  });
-                }
-
-                console.log('Producto actualizado con categorías y imagen');
-                res.status(200).json({ message: 'Producto actualizado exitosamente, incluyendo categorías y imagen' });
-              });
-            });
-          });
-        } else {
-          db.commit(err => {
-            if (err) {
-              return db.rollback(() => {
-                console.error('Error al confirmar la transacción:', err);
-                res.status(500).send('Error confirmando la transacción');
-              });
-            }
-
-            console.log('Producto actualizado sin categorías');
-            res.status(200).json({ message: 'Producto actualizado exitosamente, incluyendo imagen' });
-          });
-        }
+      res.status(200).json({
+        message: 'Producto actualizado exitosamente',
+        id,
+        name,
+        sku,
+        description,
+        retail_price,
+        cost,
+        stock_quantity,
+        category,
+        provider_id,
+        image_urls: uniqueImageUrls,
+        weight
       });
     });
-  }
+  });
 };
+
 
 
 
