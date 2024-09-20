@@ -324,24 +324,11 @@ const createProduct = (req, res) => {
 
   const { name, sku, description, retail_price, cost, stock_quantity, category, provider_id, weight, orderedImages } = req.body;
 
-  // Validar que orderedImages sea un array válido
-  let parsedOrderedImages;
-  try {
-      parsedOrderedImages = JSON.parse(orderedImages);
-      
-  } catch (err) {
-      console.error('Error al parsear orderedImages:', err);
-      return res.status(400).json({ error: 'orderedImages no es un JSON válido' });
-  }
-
   // Procesar los archivos de imágenes
   let imageUrls = [];
   if (Array.isArray(req.files) && req.files.length > 0) {
       imageUrls = req.files.map(file => {
-          if (!file.mimetype.startsWith('image/')) {
-              return res.status(400).json({ error: 'Solo se permiten archivos de imagen.' });
-          }
-          return `/images/${file.filename}`;
+          return `/images/productos/${file.filename}`;
       });
   }
 
@@ -354,7 +341,24 @@ const createProduct = (req, res) => {
   const uniqueImageUrls = [...new Set(imageUrls.map(url => url.trim()))];
   if (uniqueImageUrls.length > 8) {
       return res.status(400).json({ error: 'No se pueden subir más de 8 imágenes.' });
+  }  
+
+  // Validar que orderedImages sea un array válido
+  const orderedUrls = [];
+  try {
+      const parsedOrderedImages = JSON.parse(orderedImages);
+      console.log({orderedImages});
+
+      parsedOrderedImages.forEach(orderIndex => {
+        orderedUrls[orderIndex.index_nuevo] = uniqueImageUrls[orderIndex.index_anterior];
+      });
+      console.log({orderedUrls});
+      //pibee!! Correlo para ver que sale
+  } catch (err) { 
+      console.error('Error al parsear orderedImages:', err);
+      return res.status(400).json({ error: 'orderedImages no es un JSON válido' });
   }
+  
 
   // Verificar si el proveedor existe
   const providerQuery = 'SELECT id FROM providers WHERE id = ?';
@@ -371,7 +375,7 @@ const createProduct = (req, res) => {
       `;
 
       // Insertar el producto en la base de datos
-      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, JSON.stringify(uniqueImageUrls), weight], (err, results) => {
+      db.query(insertProductQuery, [newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, JSON.stringify(orderedUrls), weight], (err, results) => {
           if (err) {
               console.error('Error al insertar el producto:', err);
               return res.status(500).json({ error: err.message });

@@ -8,7 +8,7 @@ const fs = require('fs');
 const router = express.Router();
 
 // Verificar que la carpeta 'public/images' exista, si no, crearla
-const imagesDir = path.join(__dirname, '../public/images');
+const imagesDir = path.join(__dirname, '../public/images/productos');
 if (!fs.existsSync(imagesDir)) {
   fs.mkdirSync(imagesDir, { recursive: true });
 }
@@ -16,7 +16,7 @@ if (!fs.existsSync(imagesDir)) {
 // Configuración de almacenamiento para multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const imagesDir = path.join(__dirname, '../public/images'); // Ruta para guardar las imágenes
+    const imagesDir = path.join(__dirname, '../public/images/productos'); // Ruta para guardar las imágenes
     cb(null, imagesDir); // Guardar la imagen en 'public/images'
   },
   filename: (req, file, cb) => {
