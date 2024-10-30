@@ -1184,23 +1184,21 @@
           }
       }
       
-      
-      
       // Cargar productos en los sliders
       loadProducts('/api/categories/5', '#bestselling-products', '.bestselling-swiper');
       loadProducts('/api/categories/10', '.foodies-swiper .swiper-wrapper', '.foodies-swiper');
       loadProducts('/api/categories/11', '#products-carousel', '#products-carousel');
-
-        // Manejo de tarjetas de productos
-        const productCards = document.querySelectorAll('.product-card');
-        productCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const productId = card.getAttribute('data-id');
-                if (productId) {
-                    window.location.href = `single-product.html?id=${productId}`;
-                }
-            });
-        });
+      
+      // Manejo de tarjetas de productos
+      const productCards = document.querySelectorAll('.product-card');
+      productCards.forEach(card => {
+          card.addEventListener('click', () => {
+              const productId = card.getAttribute('data-id');
+              if (productId) {
+                  window.location.href = `single-product.html?id=${productId}`;
+              }
+          });
+      });
 
         // Manejo de la información de la cuenta
         function updateAccountInfo(user) {
