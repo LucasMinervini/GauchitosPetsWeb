@@ -1141,7 +1141,7 @@
     <div class="swiper-slide">
         <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
             <a href="single-product.html?id=${product.id}">
-                <img src="${mainImage}" class="img-fluid rounded-4" alt="${product.name}" onerror="this.src='default-image.png'">
+               <img src="${mainImage}" class="img-fluid rounded-4" alt="${product.name}" onerror="this.src='default-image.png'; console.error('Error loading image:', this.src)">
             </a>
             <div class="card-body p-0">
                 <a href="single-product.html?id=${product.id}">
