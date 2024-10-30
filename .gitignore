@@ -3,3 +3,4 @@ api.http
 bd.js
 server.js
 /public/images/productos/
+node_modules/

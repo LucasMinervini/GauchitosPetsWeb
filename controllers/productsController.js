@@ -328,7 +328,7 @@ const createProduct = (req, res) => {
   let imageUrls = [];
   if (Array.isArray(req.files) && req.files.length > 0) {
       imageUrls = req.files.map(file => {
-          return `/images/productos/${file.filename}`;
+          return `${file.filename}`;
       });
   }
 
@@ -353,8 +353,8 @@ const createProduct = (req, res) => {
         orderedUrls[orderIndex.index_nuevo] = uniqueImageUrls[orderIndex.index_anterior];
       });
       console.log({orderedUrls});
-      //pibee!! Correlo para ver que sale
-  } catch (err) { 
+      
+  } catch (err) { oki
       console.error('Error al parsear orderedImages:', err);
       return res.status(400).json({ error: 'orderedImages no es un JSON válido' });
   }
@@ -426,6 +426,7 @@ const createProduct = (req, res) => {
                           console.log("Producto creado exitosamente con ID: ", newId);
                           // Respuesta exitosa con el ID del producto y la lista de imágenes
                           res.status(201).json({ id: newId, name, sku, description, retail_price, cost, stock_quantity, category, provider_id, image_urls: uniqueImageUrls, category_ids: categories, weight });
+                          
                       });
                   }
               });

@@ -126,8 +126,20 @@
                 let output = '';
                 
                 data.forEach(product => {
-                    const imageUrls = product.image_url.split(',');
-                const mainImageUrl = imageUrls.length > 0 ? imageUrls[0].trim() : 'default-image.png';
+                    let imageUrls = [];
+      
+                      if (product.image_url) {
+                          try {
+                              // Intentar parsear las URLs de las imágenes como JSON
+                              imageUrls = JSON.parse(product.image_url);
+                          } catch (e) {
+                              // Si falla, separar por comas
+                              imageUrls = product.image_url.split(',').map(url => url.trim());
+                          }
+                      }
+      
+                      // Si no hay imágenes, establecer una predeterminada
+                      const mainImage = imageUrls.length > 0 ? imageUrls[0] : 'default-image.png';
                     output += `
                         <div class="col-md-4">
                             <div class="card mb-3">

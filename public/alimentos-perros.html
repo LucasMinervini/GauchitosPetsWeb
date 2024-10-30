@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alimentos para Perros</title>
+    <title>Alimentos para Gatos</title>
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="js/jquery-1.11.0.min.js"></script>
@@ -31,19 +31,19 @@ h2 {
     /* Reducir el espacio entre los productos */
     #alimentos-perros {
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-gap: 10px; /* Espacio entre productos */
-      padding-left: 20px; /* Margen a la izquierda */
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 5px; /* Espacio entre productos */
+      padding-left: 10px; /* Margen a la izquierda */
   }
   .product-card {
-    width: 100%;
-    min-height: 400px; /* Establece una altura mínima para las tarjetas */
+    width: 500px;
+    min-height: 500px; /* Establece una altura mínima para las tarjetas */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
-    padding: 10px;
+    padding: 5px;
     border-radius: 10px;
     background-color: #ffffff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Añadir sombra a las tarjetas */
@@ -121,6 +121,28 @@ h2 {
 .icon-left, .icon-right {
     width: 40px;    /* Tamaño de los íconos */
     height: auto;
+}
+
+.swiper-button-next, .swiper-button-prev {
+  color: #000000; /* Cambia esto al color que prefieras */
+  width: 150px; /* Aumenta el tamaño de las flechas */
+  height: 150px; /* Aumenta la altura de las flechas */
+  background: transparent; /* Fondo transparente */
+  border-radius: 50%; /* Hace que las flechas tengan forma circular */
+  top: 30%; /* Ajusta la posición vertical */
+  transform: translateY(-50%);
+}
+
+.swiper-button-next {
+  right: 10px; /* Ajusta la posición de la flecha derecha */
+}
+
+.swiper-button-prev {
+  left: 10px; /* Ajusta la posición de la flecha izquierda */
+}
+
+.swiper-button-next::after, .swiper-button-prev::after {
+  font-size: 30px; /* Aumenta el tamaño del icono de la flecha */
 }
 
   </style>
@@ -270,15 +292,17 @@ h2 {
         </div>
     </header>
 
-    <div class="swiper alimentosPerros-swiper">
+    <div class="swiper alimentosGatos-swiper">
       <div class="title-container">
         <img src="https://img.icons8.com/color/48/000000/dog-bone.png" alt="bone" class="icon-left">
-        <h2>Alimentos para Perros</h2>
+        <h2>Alimentos para Gatos</h2>
         <img src="https://img.icons8.com/color/48/000000/dog-bone.png" alt="bone" class="icon-right">
     </div>
-      <div class="swiper-wrapper" id="alimentos-perros">
+      <div class="swiper-wrapper" id="alimentos-gatos">
           <!-- Aquí se agregarán los productos dinámicamente -->
       </div>
+      <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
   </div>
 
     <footer id="footer" class="my-5">
@@ -382,57 +406,73 @@ h2 {
   <script src="js/cart.js"></script>
   <script>
     function loadProducts(apiUrl, containerSelector, swiperSelector) {
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(products => {
-                const container = document.querySelector(containerSelector);
-                container.innerHTML = ''; 
-
-                products.forEach(product => {
-                    const imageUrls = product.image_url.split(',');
-                    const mainImageUrl = imageUrls.length > 0 ? imageUrls[0].trim() : 'default-image.png'; 
-                    const productWeight = product.weight ? product.weight : 'Peso no disponible'; 
-
-                    const productElement = `
-                        <div class="swiper-slide">
-                            <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                <a href="single-product.html?id=${product.id}">
-                                    <img src="${mainImageUrl}" class="img-fluid rounded-4" alt="${product.name}" >
-                                </a>
-                                <div class="card-body p-0">
-                                    <a href="single-product.html?id=${product.id}">
-                                        <h3 class="card-title pt-4 m-0">${product.name}</h3>
-                                        <h5 class="card-title pt-4 m-0">Peso del producto: ${productWeight}</h5>
-                                    </a>
-                                    <div class="card-text">
-                                        <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
-                                        <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-                                            Agregar al carrito
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', productElement);
-                });
-
-                new Swiper(swiperSelector, {
-                    slidesPerView: 10,
-                    spaceBetween: 0,
-                    loop: true,
-                    navigation: {
-                        nextEl: '.swiper-button-next',
-                        prevEl: '.swiper-button-prev',
-                    },
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching the products:', error);
-            });
-    }
-
-    loadProducts('/api/categories/1', '#alimentos-perros', '.alimentosPerros-swiper');
+      fetch(apiUrl)
+          .then(response => response.json())
+          .then(products => {
+              const container = document.querySelector(containerSelector);
+              container.innerHTML = ''; 
+  
+              products.forEach(product => {
+                  let imageUrls = [];
+  
+                  // Verificar si product.image_url es un array JSON o una cadena separada por comas
+                  if (product.image_url) {
+                      try {
+                          // Si es un array JSON, parsearlo
+                          imageUrls = JSON.parse(product.image_url);
+                      } catch (e) {
+                          // Si no es JSON, separarlo por comas
+                          imageUrls = product.image_url.split(',').map(url => url.trim());
+                      }
+                  }
+  
+                  // Establecer una imagen predeterminada si no hay imágenes
+                  const mainImageUrl = imageUrls.length > 0 ? imageUrls[0] : 'default-image.png'; 
+                  const productWeight = product.weight ? product.weight : 'Peso no disponible'; 
+  
+                  const productElement = `
+                      <div class="swiper-slide">
+                          <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                              <a href="single-product.html?id=${product.id}">
+                                  <img src="${mainImageUrl}" class="img-fluid rounded-4" alt="${product.name}">
+                              </a>
+                              <div class="card-body p-0">
+                                  <a href="single-product.html?id=${product.id}">
+                                      <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                                      <h5 class="card-title pt-4 m-0">Peso del producto: ${productWeight}</h5>
+                                  </a>
+                                  <div class="card-text">
+                                      <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
+                                      <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                                          Agregar al carrito
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+                  container.insertAdjacentHTML('beforeend', productElement);
+              });
+  
+              // Inicializar el Swiper después de cargar los productos
+              new Swiper(swiperSelector, {
+                  slidesPerView: 4,
+                  spaceBetween: 0,
+                  loop: true,
+                  navigation: {
+                      nextEl: '.swiper-button-next',
+                      prevEl: '.swiper-button-prev',
+                  },
+              });
+          })
+          .catch(error => {
+              console.error('Error fetching the products:', error);
+          });
+  }
+  
+  // Llamada a la función para cargar los productos
+  loadProducts('/api/categories/2', '#alimentos-gatos', '.alimentosGatos-swiper');
+  
 </script>
 </body>
 </html>

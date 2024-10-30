@@ -667,16 +667,18 @@
                     imageUrls = product.image_url.split(',');
                 }
     
-                const mainImage = imageUrls.length > 0 ? imageUrls[0] : 'default-image.png';
+                // Construir la URL completa para la imagen principal
+                const mainImage = imageUrls.length > 0 ? `/images/productos/${imageUrls[0].trim()}` : 'default-image.png';
                 document.getElementById('product-image').src = mainImage;
     
+                // Construir la galería de imágenes
                 const gallery = document.getElementById('product-gallery');
                 gallery.innerHTML = '';
                 imageUrls.forEach((url, index) => {
                     const imgElement = document.createElement('img');
-                    imgElement.src = url.trim();
+                    imgElement.src = `/images/productos/${url.trim()}`;
                     imgElement.alt = `Imagen ${index + 1} del producto ${product.name}`;
-                    imgElement.addEventListener('click', () => changeMainImage(url));
+                    imgElement.addEventListener('click', () => changeMainImage(`/images/productos/${url.trim()}`));
                     gallery.appendChild(imgElement);
                 });
     
@@ -701,9 +703,6 @@
                 document.getElementById('product-name').textContent = 'Error al cargar el producto';
             });
     }
-    
-    
-    
     
     
 
