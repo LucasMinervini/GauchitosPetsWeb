@@ -1120,62 +1120,54 @@
         container.innerHTML = ''; 
 
         products.forEach(product => {
-            let imageUrls = [];
-
-            if (product.image_url) {
-                try {
-                    // Intentar parsear las URLs de las imágenes como JSON
-                    imageUrls = JSON.parse(product.image_url);
-                } catch (e) {
-                    // Si falla, separar por comas
-                    imageUrls = product.image_url.split(',').map(url => url.trim());
-                }
-            }
-            
-
-            // Si no hay imágenes, establecer una predeterminada
-            const mainImage = `/images/productos/${imageUrls[0]}`;
-            const productWeight = product.weight ? product.weight : 'Peso no disponible'; 
-
-            const productElement = `
-    <div class="swiper-slide">
-        <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
-            <a href="single-product.html?id=${product.id}">
-               <img src="${mainImage}" class="img-fluid rounded-4" alt="${product.name}" onerror="this.src='default-image.png'; console.error('Error loading image:', this.src)">
-            </a>
-            <div class="card-body p-0">
-                <a href="single-product.html?id=${product.id}">
-                    <h3 class="card-title pt-4 m-0">${product.name}</h3>
-                    <h5 class="card-title pt-4 m-0">Peso del producto: ${product.weight || 'Peso no disponible'} Kg</h5>
-                </a>
-                <div class="card-text">
-                    <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
-                    <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}" data-product-weight="${product.weight || 'Peso no disponible'}">
-                        Agregar al carrito
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-`;
-
-            container.insertAdjacentHTML('beforeend', productElement);
-        });
-
-        // Inicializar el Swiper después de cargar los productos
-        new Swiper(swiperSelector, {
-            slidesPerView: 4,
-            spaceBetween: 30,
-            loop: true,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-        });
-    })
-    .catch(error => {
-        console.error('Error fetching the products:', error);
-    });
+          let imageUrls = [];
+      
+          if (product.image_url) {
+              try {
+                  // Intentar parsear las URLs de las imágenes como JSON
+                  imageUrls = JSON.parse(product.image_url);
+              } catch (e) {
+                  // Si falla, separar por comas
+                  imageUrls = product.image_url.split(',').map(url => url.trim());
+              }
+          }
+      
+          // Si no hay imágenes, establecer una predeterminada
+          const mainImage = `/images/productos/${imageUrls[0] || 'default-image.png'}`;
+          const productWeight = product.weight ? product.weight : 'Peso no disponible'; 
+      
+          const productElement = `
+          <div class="swiper-slide">
+              <div class="card position-relative product-card" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}">
+                  <a href="single-product.html?id=${product.id}">
+                     <img src="${mainImage}" class="img-fluid rounded-4" alt="${product.name}" onerror="handleImageError(this)">
+                  </a>
+                  <div class="card-body p-0">
+                      <a href="single-product.html?id=${product.id}">
+                          <h3 class="card-title pt-4 m-0">${product.name}</h3>
+                          <h5 class="card-title pt-4 m-0">Peso del producto: ${product.weight || 'Peso no disponible'} Kg</h5>
+                      </a>
+                      <div class="card-text">
+                          <h3 class="secondary-font text-primary">$${parseFloat(product.retail_price).toFixed(2)}</h3>
+                          <button class="btn btn-primary btn-add-to-cart mt-3" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.retail_price}" data-product-weight="${product.weight || 'Peso no disponible'}">
+                              Agregar al carrito
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>`;
+      
+          // Añadir el elemento del producto al contenedor
+          document.querySelector('.swiper-wrapper').innerHTML += productElement;
+      });
+      
+      // Función para manejar errores de carga de imágenes
+      function handleImageError(img) {
+          if (!img.dataset.error) {
+              img.dataset.error = true;
+              img.src = 'default-image.png';
+              console.error('Error loading image:', img.src);
+          }
       }
       
       
